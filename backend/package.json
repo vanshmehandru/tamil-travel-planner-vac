@@ -1,7 +1,7 @@
 {
   "name": "namma-yatri",
   "version": "1.0.0",
-  "description": "Tamil Travel Booking Backend - Namma Yatri",
+  "description": "Tamil Travel Booking Backend - Namma Yatra",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",

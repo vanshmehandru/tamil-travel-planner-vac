@@ -97,7 +97,7 @@ const downloadTicket = async (req, res, next) => {
 
     // Build a formatted ticket object for the frontend
     const formattedTicket = {
-      appName: 'நம்ம யாத்ரி', // Namma Yatri
+      appName: 'நம்ம யாத்திரை', // Namma Yatra
       ticketId: ticket.ticketId,
       pnrNumber: ticket.pnrNumber,
       isValid: ticket.isValid,

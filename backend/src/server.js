@@ -52,9 +52,9 @@ app.use('/api/auth/register', authLimiter);
 app.get('/', (req, res) => {
   res.json({
     success: true,
-    app: 'நம்ம யாத்ரி API',
+    app: 'நம்ம யாத்திரை API',
     version: '1.0.0',
-    message: 'வணக்கம்! நம்ம யாத்ரி பயண பதிவு அமைப்பு தயாராக உள்ளது.',
+    message: 'வணக்கம்! நம்ம யாத்திரை பயண பதிவு அமைப்பு தயாராக உள்ளது.',
     timestamp: new Date().toISOString(),
     endpoints: {
       auth:    '/api/auth',
@@ -87,7 +87,7 @@ app.use(errorHandler);
 // ─── Start Server ─────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 5000;
 const server = app.listen(PORT, () => {
-  console.log(`\n🚀 நம்ம யாத்ரி சர்வர் இயங்குகிறது!`);
+  console.log(`\n🚀 நம்ம யாத்திரை சர்வர் இயங்குகிறது!`);
   console.log(`   Port    : ${PORT}`);
   console.log(`   Env     : ${process.env.NODE_ENV}`);
   console.log(`   URL     : http://localhost:${PORT}\n`);

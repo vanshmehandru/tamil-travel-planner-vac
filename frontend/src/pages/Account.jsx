@@ -12,15 +12,25 @@ export function Account() {
   const [bookings, setBookings] = useState([]);
   const [savedTickets, setSavedTickets] = useState([]);
 
+  const location = window.location; // Fallback if useLocation not imported yet, but I'll add the import
+
+  useEffect(() => {
+    const query = new URLSearchParams(window.location.search);
+    const tab = query.get('tab');
+    if (tab && ['profile', 'bookings', 'tickets', 'settings'].includes(tab)) {
+      setActiveTab(tab);
+    }
+  }, [window.location.search]);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         if (activeTab === 'bookings') {
           const res = await bookingAPI.getMyBookings();
-          setBookings(res.data || []);
+          setBookings(res.data.data || res.data || []);
         } else if (activeTab === 'tickets') {
            const res = await ticketAPI.getMyTickets();
-           setSavedTickets(res.data || []);
+           setSavedTickets(res.data.data || res.data || []);
         }
       } catch (err) {
         console.error(err);

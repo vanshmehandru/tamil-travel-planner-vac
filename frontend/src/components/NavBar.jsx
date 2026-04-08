@@ -16,7 +16,7 @@ export function NavBar() {
   const navItems = [
     { label: 'முகப்பு', icon: Home, path: '/home' },
     { label: 'தேடல்', icon: Search, path: '/search' },
-    { label: 'என் பயணங்கள்', icon: Map, path: '/account' },
+    { label: 'என் பயணங்கள்', icon: Map, path: '/account?tab=bookings' },
   ];
 
   return (
@@ -25,7 +25,7 @@ export function NavBar() {
       <nav className="hidden md:flex sticky top-0 z-50 w-full bg-primary text-white shadow-md h-16 items-center px-8">
         {/* Left Section: Logo */}
         <div className="flex-1">
-          <Link to="/home" className="text-2xl font-bold font-sans">நம்ம யாத்ரி</Link>
+          <Link to="/home" className="text-2xl font-bold font-sans">நம்ம யாத்திரை</Link>
         </div>
 
         {/* Center Section: Main Navigation Links */}

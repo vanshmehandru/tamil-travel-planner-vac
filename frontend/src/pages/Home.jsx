@@ -25,6 +25,10 @@ export function Home() {
   };
 
   const handleSearchSubmit = () => {
+    if (!source || !destination) {
+      alert('தயவுசெய்து புறப்படும் மற்றும் சேரும் ஊரை குறிப்பிடவும்'); // Please specify source and destination
+      return;
+    }
     navigate('/search');
   };
 

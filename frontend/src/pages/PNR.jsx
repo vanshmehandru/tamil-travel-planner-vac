@@ -10,7 +10,7 @@ export function PNR() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSearch = async (e) => {
+   const handleSearch = async (e) => {
     e.preventDefault();
     if (!pnr) return;
     setIsLoading(true);
@@ -18,22 +18,26 @@ export function PNR() {
     setStatusResult(null);
     try {
       const res = await ticketAPI.getByPNR(pnr);
-      setStatusResult(res.data);
+      setStatusResult(res.data.data || res.data);
     } catch (err) {
       console.error(err);
       // Mock response for demo
       setTimeout(() => {
          if(pnr === '1234567890') {
             setStatusResult({
-               pnr: '1234567890',
-               status: 'உறுதிப்படுத்தப்பட்டது',
-               trainName: 'பாண்டியன் எக்ஸ்பிரஸ் (12637)',
-               source: 'சென்னை',
-               destination: 'மதுரை',
-               date: '28 டிசம்பர் 2024',
-               passengers: [
-                 { name: 'பயணி 1', status: 'CNF', seat: 'B1-12' },
-                 { name: 'பயணி 2', status: 'CNF', seat: 'B1-13' }
+               pnrNumber: '1234567890',
+               isValid: true,
+               journeyDetails: {
+                 transportName: 'பாண்டியன் எக்ஸ்பிரஸ்',
+                 transportNumber: '12637',
+                 sourceName: 'சென்னை',
+                 destinationName: 'மதுரை',
+                 travelDate: '2024-12-28',
+                 departureTime: '21:40'
+               },
+               passengerInfo: [
+                 { name: 'பயணி 1', seatClass: 'B1', seatNumber: '12' },
+                 { name: 'பயணி 2', seatClass: 'B1', seatNumber: '13' }
                ]
             });
          } else {
@@ -77,27 +81,27 @@ export function PNR() {
                 <div className="flex justify-between items-center mb-4 border-b pb-4">
                   <div>
                      <p className="text-sm text-brandMutedText font-semibold">PNR எண்</p>
-                     <p className="text-2xl font-bold font-mono text-brandDarkText">{statusResult.pnr}</p>
+                     <p className="text-2xl font-bold font-mono text-brandDarkText">{statusResult.pnrNumber}</p>
                   </div>
-                  <div className="bg-brandGreen text-white px-4 py-2 rounded-full font-bold shadow-sm">
-                     {statusResult.status}
+                  <div className={`px-4 py-2 rounded-full font-bold shadow-sm ${statusResult.isValid ? 'bg-brandGreen text-white' : 'bg-red-500 text-white'}`}>
+                     {statusResult.isValid ? 'உறுதி' : 'காலாவதியானது'}
                   </div>
                 </div>
 
                 <div className="mb-6">
-                   <h3 className="font-bold text-lg text-primary">{statusResult.trainName}</h3>
-                   <p className="font-semibold text-brandDarkText mt-1">{statusResult.source} ➔ {statusResult.destination}</p>
-                   <p className="text-brandMutedText text-sm font-semibold">{statusResult.date}</p>
+                   <h3 className="font-bold text-lg text-primary">{statusResult.journeyDetails?.transportName}</h3>
+                   <p className="font-semibold text-brandDarkText mt-1">{statusResult.journeyDetails?.sourceName} ➔ {statusResult.journeyDetails?.destinationName}</p>
+                   <p className="text-brandMutedText text-sm font-semibold">{statusResult.journeyDetails?.travelDate ? new Date(statusResult.journeyDetails.travelDate).toLocaleDateString('ta-IN') : '-'}</p>
                 </div>
 
                 <h4 className="font-bold border-b pb-2 mb-3">பயணிகள் நிலை</h4>
                 <div className="space-y-3 mb-6">
-                   {statusResult.passengers?.map((p, i) => (
+                   {statusResult.passengerInfo?.map((p, i) => (
                       <div key={i} className="flex justify-between items-center bg-white p-3 rounded shadow-sm border border-gray-100">
                          <span className="font-semibold">{p.name}</span>
                          <div className="text-right">
-                            <span className="text-sm font-bold text-brandGreen block">{p.status}</span>
-                            <span className="text-xs font-bold text-brandMutedText">{p.seat}</span>
+                            <span className="text-sm font-bold text-brandGreen block">உறுதி (CNF)</span>
+                            <span className="text-xs font-bold text-brandMutedText">{p.seatClass}-{p.seatNumber}</span>
                          </div>
                       </div>
                    ))}

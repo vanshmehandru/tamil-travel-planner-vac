@@ -4,7 +4,7 @@ dotenv.config({ path: '../.env' });
 
 const TravelOption = require('../models/TravelOption');
 
-const MONGO_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/namma_yatri';
+const MONGO_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/namma_yatra';
 
 const travelOptions = [
   // ─────────────────── TRAINS ───────────────────

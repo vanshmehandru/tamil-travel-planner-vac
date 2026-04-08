@@ -1,4 +1,4 @@
-# 🚌 நம்ம யாத்ரி — Namma Yatra Backend API
+# 🚌 நம்ம யாத்திரை — Namma Yatra Backend API
 
 > Tamil Travel Booking System | Node.js + Express + MongoDB
 

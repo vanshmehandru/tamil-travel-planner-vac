@@ -71,15 +71,3 @@
     display: block !important;
   }
 }
-
-@media print {
-  body {
-    background: white;
-  }
-  .no-print {
-    display: none !important;
-  }
-  .print-only {
-    display: block !important;
-  }
-}

@@ -45,7 +45,7 @@ const register = async (req, res, next) => {
 
     res.status(201).json({
       success: true,
-      message: 'பதிவு வெற்றிகரமாக முடிந்தது! நம்ம யாத்ரிக்கு வரவேற்கிறோம்!', // Registration successful! Welcome to Namma Yatri!
+      message: 'பதிவு வெற்றிகரமாக முடிந்தது! நம்ம யாத்திரைக்கும் வரவேற்கிறோம்!', // Registration successful! Welcome to Namma Yatra!
       token,
       user: {
         id: user._id,

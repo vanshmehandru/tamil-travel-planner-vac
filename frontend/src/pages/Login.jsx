@@ -44,7 +44,7 @@ export function Login() {
     <div className="min-h-screen bg-gradient-to-br from-blue-900 to-primary flex items-center justify-center p-6">
       <div className="card w-full max-w-[480px]">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-primary mb-2">நம்ம யாத்ரி</h1>
+          <h1 className="text-4xl font-bold text-primary mb-2">நம்ம யாத்திரை</h1>
           <p className="text-brandMutedText text-lg">உங்கள் பயணம், எங்கள் பொறுப்பு</p>
         </div>
 

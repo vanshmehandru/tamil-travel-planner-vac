@@ -41,34 +41,40 @@ export function Book() {
   const calculateTotal = () => {
     const base = travelClass.price * passengers.length;
     const tax = Math.round(base * 0.05);
-    const extraLuggage = luggageAllowance === '25 கிலோ' ? 500 : 0;
-    return base + tax + 30 + extraLuggage; // fee = 30
+    const luggageKg = parseInt(luggageAllowance) || 0;
+    const includedLuggage = selectedOption.luggageAllowance || 15;
+    const extraLuggageCharge = luggageKg > includedLuggage ? (luggageKg - includedLuggage) * 50 : 0;
+    
+    return base + tax + (30 * passengers.length) + extraLuggageCharge;
   };
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
       const payload = {
-        travelOptionId: selectedOption.id,
-        travelClass: travelClass.name,
-        passengers,
-        foodPreference,
-        luggageAllowance,
-        totalAmount: calculateTotal(),
-        source,
-        destination,
-        date: travelDate
+        travelOptionId: selectedOption._id,
+        travelClass: travelClass.class,
+        travelDate: travelDate,
+        passengers: passengers.map(p => ({
+          name: p.name,
+          age: parseInt(p.age),
+          gender: p.gender === 'ஆண்' ? 'male' : p.gender === 'பெண்' ? 'female' : 'other',
+          idType: p.idType,
+          idNumber: p.idNumber
+        })),
+        foodPreference: foodPreference === 'சைவம்' ? 'veg' : foodPreference === 'அசைவம்' ? 'non-veg' : 'no_food',
+        luggageAllowance: parseInt(luggageAllowance) || 15,
+        paymentMethod: 'upi', // Default for now
       };
+
       const res = await bookingAPI.createBooking(payload);
       resetBooking();
-      navigate(`/ticket/${res.data.ticketId || res.data._id || 'TKT-12345'}`);
+      // Navigate to ticket using the ticket ID from the response
+      const ticketId = res.data?.booking?.ticketId || res.data?.ticketId;
+      navigate(`/ticket/${ticketId}`);
     } catch (err) {
-      console.error(err);
-      // Simulate success if API missing
-      setTimeout(() => {
-        resetBooking();
-        navigate('/ticket/TKT-demo-123');
-      }, 1500);
+      console.error("Booking error:", err.response?.data || err.message);
+      alert(err.response?.data?.message || 'பதிவில் பிழை ஏற்பட்டுள்ளது. மீண்டும் முயற்சிக்கவும்.');
     } finally {
       setIsSubmitting(false);
     }

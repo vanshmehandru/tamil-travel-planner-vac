@@ -131,11 +131,9 @@ NODE_ENV=development
 **POST** `/api/auth/register`
 ```json
 {
-  "name": "முருகன் செல்வம்",
-  "phone": "9876543210",
+  "username": "murugan123",
+  "email": "murugan@example.com",
   "password": "secret123",
-  "age": 35,
-  "gender": "male"
 }
 ```
 **Response:**
@@ -146,10 +144,8 @@ NODE_ENV=development
   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "user": {
     "id": "65abc123...",
-    "name": "முருகன் செல்வம்",
-    "phone": "9876543210",
-    "age": 35,
-    "gender": "male"
+    "username": "murugan123",
+    "email": "murugan@example.com"
   }
 }
 ```

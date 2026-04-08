@@ -3,23 +3,19 @@ const bcrypt = require('bcryptjs');
 
 const userSchema = new mongoose.Schema(
   {
-    name: {
+    username: {
       type: String,
-      required: [true, 'பெயர் தேவை'], // Name is required
+      required: [true, 'பயனர்பெயர் தேவை'], // Username is required
       trim: true,
-      maxlength: [100, 'பெயர் 100 எழுத்துகளுக்கு மேல் இருக்கக்கூடாது'],
-    },
-    phone: {
-      type: String,
       unique: true,
-      sparse: true,
-      match: [/^[6-9]\d{9}$/, 'சரியான தொலைபேசி எண் கொடுக்கவும்'],
+      maxlength: [50, 'பயனர்பெயர் 50 எழுத்துகளுக்கு மேல் இருக்கக்கூடாது'],
     },
     email: {
       type: String,
+      required: [true, 'மின்னஞ்சல் தேவை'],
       unique: true,
-      sparse: true,
       lowercase: true,
+      trim: true,
       match: [/^\S+@\S+\.\S+$/, 'சரியான மின்னஞ்சல் கொடுக்கவும்'],
     },
     password: {
@@ -27,23 +23,6 @@ const userSchema = new mongoose.Schema(
       required: [true, 'கடவுச்சொல் தேவை'],
       minlength: [6, 'கடவுச்சொல் குறைந்தது 6 எழுத்துகள் இருக்க வேண்டும்'],
       select: false,
-    },
-    preferredLanguage: {
-      type: String,
-      default: 'ta', // Tamil default
-    },
-    age: {
-      type: Number,
-      min: 1,
-      max: 120,
-    },
-    gender: {
-      type: String,
-      enum: ['male', 'female', 'other'],
-    },
-    address: {
-      type: String,
-      trim: true,
     },
     isActive: {
       type: Boolean,
@@ -67,13 +46,5 @@ userSchema.pre('save', async function (next) {
 userSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
-
-// Validate that either phone or email is present
-userSchema.pre('validate', function (next) {
-  if (!this.phone && !this.email) {
-    this.invalidate('phone', 'தொலைபேசி அல்லது மின்னஞ்சல் கொடுக்கவும்');
-  }
-  next();
-});
 
 module.exports = mongoose.model('User', userSchema);

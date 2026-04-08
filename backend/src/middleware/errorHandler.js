@@ -6,8 +6,8 @@ const errorHandler = (err, req, res, next) => {
   if (err.code === 11000) {
     const field = Object.keys(err.keyValue)[0];
     const fieldNames = {
+      username: 'பயனர்பெயர்',
       email: 'மின்னஞ்சல்',
-      phone: 'தொலைபேசி எண்',
       ticketId: 'டிக்கெட் ஐடி',
       pnrNumber: 'PNR எண்',
     };

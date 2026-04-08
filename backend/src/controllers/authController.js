@@ -2,10 +2,18 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
 // Generate JWT token
-const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
+const generateToken = (user) => {
+  return jwt.sign(
+    {
+      id: user._id,
+      email: user.email,
+      username: user.username,
+    },
+    process.env.JWT_SECRET,
+    {
     expiresIn: process.env.JWT_EXPIRE || '7d',
-  });
+    }
+  );
 };
 
 // @desc    Register a new user
@@ -13,32 +21,27 @@ const generateToken = (id) => {
 // @access  Public
 const register = async (req, res, next) => {
   try {
-    const { name, phone, email, password, age, gender, address } = req.body;
+    const { username, email, password } = req.body;
 
-    if (!phone && !email) {
-      return res.status(400).json({
-        success: false,
-        message: 'தொலைபேசி அல்லது மின்னஞ்சல் கொடுக்கவும்', // Provide phone or email
-      });
-    }
+    const normalizedEmail = email?.toLowerCase().trim();
 
     // Check if user already exists
     const existingUser = await User.findOne({
       $or: [
-        ...(phone ? [{ phone }] : []),
-        ...(email ? [{ email }] : []),
+        { username },
+        { email: normalizedEmail },
       ],
     });
 
     if (existingUser) {
       return res.status(400).json({
         success: false,
-        message: 'இந்த தொலைபேசி / மின்னஞ்சல் ஏற்கனவே பதிவு செய்யப்பட்டுள்ளது', // Already registered
+        message: 'இந்த பயனர்பெயர் / மின்னஞ்சல் ஏற்கனவே பதிவு செய்யப்பட்டுள்ளது', // Already registered
       });
     }
 
-    const user = await User.create({ name, phone, email, password, age, gender, address });
-    const token = generateToken(user._id);
+    const user = await User.create({ username, email: normalizedEmail, password });
+    const token = generateToken(user);
 
     res.status(201).json({
       success: true,
@@ -46,11 +49,8 @@ const register = async (req, res, next) => {
       token,
       user: {
         id: user._id,
-        name: user.name,
-        phone: user.phone,
+        username: user.username,
         email: user.email,
-        age: user.age,
-        gender: user.gender,
       },
     });
   } catch (error) {
@@ -63,25 +63,21 @@ const register = async (req, res, next) => {
 // @access  Public
 const login = async (req, res, next) => {
   try {
-    const { identifier, password } = req.body;
-    // identifier = phone number or email
+    const { email, password } = req.body;
 
-    if (!identifier || !password) {
+    if (!email || !password) {
       return res.status(400).json({
         success: false,
-        message: 'தொலைபேசி / மின்னஞ்சல் மற்றும் கடவுச்சொல் தேவை', // Phone/email and password required
+        message: 'மின்னஞ்சல் மற்றும் கடவுச்சொல் தேவை', // Email and password required
       });
     }
 
-    // Find user by phone or email
-    const user = await User.findOne({
-      $or: [{ phone: identifier }, { email: identifier.toLowerCase() }],
-    }).select('+password');
+    const user = await User.findOne({ email: email.toLowerCase().trim() }).select('+password');
 
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: 'தொலைபேசி / மின்னஞ்சல் அல்லது கடவுச்சொல் தவறானது', // Wrong phone/email or password
+        message: 'மின்னஞ்சல் அல்லது கடவுச்சொல் தவறானது', // Wrong email or password
       });
     }
 
@@ -89,23 +85,20 @@ const login = async (req, res, next) => {
     if (!isMatch) {
       return res.status(401).json({
         success: false,
-        message: 'தொலைபேசி / மின்னஞ்சல் அல்லது கடவுச்சொல் தவறானது',
+        message: 'மின்னஞ்சல் அல்லது கடவுச்சொல் தவறானது',
       });
     }
 
-    const token = generateToken(user._id);
+    const token = generateToken(user);
 
     res.status(200).json({
       success: true,
-      message: `வணக்கம் ${user.name}! வெற்றிகரமாக உள்நுழைந்தீர்கள்`, // Welcome! Successfully logged in
+      message: `வணக்கம் ${user.username}! வெற்றிகரமாக உள்நுழைந்தீர்கள்`, // Welcome! Successfully logged in
       token,
       user: {
         id: user._id,
-        name: user.name,
-        phone: user.phone,
+        username: user.username,
         email: user.email,
-        age: user.age,
-        gender: user.gender,
       },
     });
   } catch (error) {
@@ -123,13 +116,8 @@ const getMe = async (req, res, next) => {
       success: true,
       user: {
         id: user._id,
-        name: user.name,
-        phone: user.phone,
+        username: user.username,
         email: user.email,
-        age: user.age,
-        gender: user.gender,
-        address: user.address,
-        preferredLanguage: user.preferredLanguage,
         createdAt: user.createdAt,
       },
     });
@@ -143,10 +131,12 @@ const getMe = async (req, res, next) => {
 // @access  Private
 const updateProfile = async (req, res, next) => {
   try {
-    const allowedFields = ['name', 'age', 'gender', 'address', 'preferredLanguage'];
+    const allowedFields = ['username', 'email'];
     const updates = {};
     allowedFields.forEach((field) => {
-      if (req.body[field] !== undefined) updates[field] = req.body[field];
+      if (req.body[field] !== undefined) {
+        updates[field] = field === 'email' ? req.body[field].toLowerCase().trim() : req.body[field];
+      }
     });
 
     const user = await User.findByIdAndUpdate(
@@ -160,12 +150,8 @@ const updateProfile = async (req, res, next) => {
       message: 'சுயவிவரம் புதுப்பிக்கப்பட்டது', // Profile updated
       user: {
         id: user._id,
-        name: user.name,
-        phone: user.phone,
+        username: user.username,
         email: user.email,
-        age: user.age,
-        gender: user.gender,
-        address: user.address,
       },
     });
   } catch (error) {

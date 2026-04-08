@@ -9,10 +9,9 @@ const validate = require('../middleware/validate');
 router.post(
   '/register',
   [
-    body('name').trim().notEmpty().withMessage('பெயர் தேவை'),
+    body('username').trim().notEmpty().withMessage('பயனர்பெயர் தேவை'),
+    body('email').isEmail().normalizeEmail().withMessage('சரியான மின்னஞ்சல்'),
     body('password').isLength({ min: 6 }).withMessage('கடவுச்சொல் குறைந்தது 6 எழுத்துகள்'),
-    body('phone').optional().isMobilePhone('en-IN').withMessage('சரியான தொலைபேசி எண்'),
-    body('email').optional().isEmail().withMessage('சரியான மின்னஞ்சல்'),
   ],
   validate,
   register
@@ -22,7 +21,7 @@ router.post(
 router.post(
   '/login',
   [
-    body('identifier').notEmpty().withMessage('தொலைபேசி / மின்னஞ்சல் தேவை'),
+    body('email').isEmail().normalizeEmail().withMessage('சரியான மின்னஞ்சல்'),
     body('password').notEmpty().withMessage('கடவுச்சொல் தேவை'),
   ],
   validate,

@@ -5,23 +5,52 @@ import { VoiceInputButton } from '../components/VoiceInputButton';
 import { CityAutocomplete } from '../components/CityAutocomplete';
 import { useSearchStore } from '../store/searchStore';
 import { useAuthStore } from '../store/authStore';
-import { ArrowRightLeft, Train, Bus, Plane, Calendar, Users } from 'lucide-react';
+import { nlpAPI } from '../services/api';
+import { ArrowRightLeft, Train, Bus, Plane, Calendar, Users, Loader2 } from 'lucide-react';
 
 export function Home() {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthStore();
   const { source, destination, travelDate, passengers, travelType, setSearchParams } = useSearchStore();
+  const [isAiLoading, setIsAiLoading] = useState(false);
   const [nlpChip, setNlpChip] = useState('');
 
-  const handleVoiceResult = (parsedResult) => {
-    // parsedResult expected: { source, destination, travelType, date }
+  const applyParsedResult = (parsed) => {
+    if (!parsed) return;
+    
     setSearchParams({
-      source: parsedResult.source || source,
-      destination: parsedResult.destination || destination,
-      travelType: parsedResult.travelType || travelType,
-      travelDate: parsedResult.date || travelDate,
+      source: parsed.source || source,
+      destination: parsed.destination || destination,
+      travelType: parsed.travelType || travelType,
+      travelDate: parsed.date || travelDate,
+      passengers: parsed.passengers || passengers,
     });
-    setNlpChip(`${parsedResult.source} ➔ ${parsedResult.destination}, ${parsedResult.travelType}`);
+
+    const s = parsed.source || source;
+    const d = parsed.destination || destination;
+    
+    if (s && d) {
+       setNlpChip(`${s} ➔ ${d}${parsed.travelType ? `, ${parsed.travelType}` : ''}`);
+    } else if (d) {
+       setNlpChip(`சேருமிடம்: ${d}${parsed.travelType ? `, ${parsed.travelType}` : ''} (புறப்படும் ஊரை தேர்வு செய்யவும்)`);
+    } else if (s) {
+       setNlpChip(`புறப்படுமிடம்: ${s} (சேரும் ஊரை தேர்வு செய்யவும்)`);
+    }
+  };
+
+  const handleTextSearch = async (text) => {
+    if (!text.trim()) return;
+    setIsAiLoading(true);
+    try {
+      const res = await nlpAPI.parseText({ text });
+      if (res.data.success) {
+        applyParsedResult(res.data.parsed);
+      }
+    } catch (err) {
+      console.error("AI Search Error:", err);
+    } finally {
+      setIsAiLoading(false);
+    }
   };
 
   const handleSearchSubmit = () => {
@@ -57,12 +86,17 @@ export function Home() {
                 className="w-full bg-transparent border-none outline-none text-xl text-brand-dark-text placeholder:text-brand-muted-text"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
-                    // Trigger parsing for typed text
-                    handleVoiceResult({ source: e.target.value.split('➔')[0]?.trim(), destination: e.target.value.split('➔')[1]?.trim() });
+                    handleTextSearch(e.target.value);
                   }
                 }}
               />
-              <VoiceInputButton onResult={handleVoiceResult} />
+              {isAiLoading ? (
+                <div className="w-14 h-14 flex items-center justify-center">
+                  <Loader2 className="animate-spin text-primary" size={28} />
+                </div>
+              ) : (
+                <VoiceInputButton onResult={(res) => applyParsedResult(res.parsed)} />
+              )}
             </div>
             {nlpChip && (
               <div className="mt-4 flex flex-col items-center">

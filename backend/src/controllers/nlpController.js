@@ -1,7 +1,6 @@
-// Tamil NLP Input Processor
-// Extracts journey intent from Tamil text/voice input
+const { parseTravelIntent } = require('../services/aiService');
 
-// Tamil keyword maps
+// Tamil keyword maps (kept for fallback)
 const TRAVEL_TYPES = {
   train: ['ரயில்', 'train', 'ரெயில்', 'express', 'எக்ஸ்பிரஸ்', 'மெயில்'],
   bus: ['பஸ்', 'bus', 'பேருந்து', 'ஓமினி', 'omni'],
@@ -23,20 +22,15 @@ const CITY_MAP = {
   ஓட்டி: 'UAM', ooty: 'UAM',
 };
 
-// Direction markers in Tamil
+// ... existing maps for fallback ...
 const FROM_MARKERS = ['இருந்து', 'லிருந்து', 'from', 'புறப்பட', 'start'];
-const TO_MARKERS = ['வரை', 'க்கு', 'to', 'செல்ல', 'போக', 'போகணும்', 'போகனும்'];
-const DATE_PATTERNS = {
-  today: ['இன்று', 'today', 'இன்னைக்கு'],
-  tomorrow: ['நாளை', 'tomorrow', 'நாளைக்கு'],
-  dayAfter: ['நாளை மறுநாள்', 'day after tomorrow'],
-};
+const TO_MARKERS = ['வரை', 'க்கு', 'to', 'செல்ல', 'போக', 'போகணும்', 'போகனும'];
 
-const parseTamilInput = (text) => {
+const parseTamilInputLegacy = (text) => {
   const result = {
     source: null,
     destination: null,
-    travelType: null,
+    travelType: 'train',
     date: null,
     passengers: 1,
     confidence: 'low',
@@ -44,9 +38,8 @@ const parseTamilInput = (text) => {
   };
 
   const lower = text.toLowerCase();
-  const words = lower.split(/[\s,]+/);
-
-  // 1. Detect travel type
+  
+  // Basic travel type detection
   for (const [type, keywords] of Object.entries(TRAVEL_TYPES)) {
     if (keywords.some((kw) => lower.includes(kw))) {
       result.travelType = type;
@@ -54,7 +47,7 @@ const parseTamilInput = (text) => {
     }
   }
 
-  // 2. Detect cities
+  // Basic city detection
   const foundCities = [];
   for (const [name, code] of Object.entries(CITY_MAP)) {
     if (lower.includes(name.toLowerCase())) {
@@ -67,84 +60,64 @@ const parseTamilInput = (text) => {
     result.source = foundCities[0].code;
     result.destination = foundCities[1].code;
   } else if (foundCities.length === 1) {
-    // Try to figure out direction from markers
+    // Check if it's a destination (ending in 'ku' markers)
     const pos = foundCities[0].position;
-    const beforeCity = lower.substring(0, pos);
-    const isSource = FROM_MARKERS.some((m) => beforeCity.includes(m));
-    const isDest = TO_MARKERS.some((m) => beforeCity.includes(m));
-    if (isSource) result.source = foundCities[0].code;
-    else if (isDest) result.destination = foundCities[0].code;
-    else result.source = foundCities[0].code; // default: first city is source
-  }
-
-  // 3. Detect date
-  const today = new Date();
-  for (const [key, keywords] of Object.entries(DATE_PATTERNS)) {
-    if (keywords.some((kw) => lower.includes(kw))) {
-      if (key === 'today') result.date = today.toISOString().split('T')[0];
-      else if (key === 'tomorrow') {
-        const d = new Date(today); d.setDate(d.getDate() + 1);
-        result.date = d.toISOString().split('T')[0];
-      } else if (key === 'dayAfter') {
-        const d = new Date(today); d.setDate(d.getDate() + 2);
-        result.date = d.toISOString().split('T')[0];
-      }
-      break;
+    const beforeOrAfterCity = lower.substring(pos - 10, pos + 20); // check context around city
+    const isTo = TO_MARKERS.some(m => beforeOrAfterCity.includes(m));
+    const isFrom = FROM_MARKERS.some(m => beforeOrAfterCity.includes(m));
+    
+    if (isTo) {
+      result.destination = foundCities[0].code;
+    } else {
+      result.source = foundCities[0].code;
     }
   }
-
-  // Look for explicit dates (e.g. "15/06" or "June 15" or "15 ஜூன்")
-  const dateMatch = lower.match(/(\d{1,2})[\/\-](\d{1,2})(?:[\/\-](\d{4}))?/);
-  if (dateMatch && !result.date) {
-    const day = dateMatch[1].padStart(2, '0');
-    const month = dateMatch[2].padStart(2, '0');
-    const year = dateMatch[3] || today.getFullYear();
-    result.date = `${year}-${month}-${day}`;
-  }
-
-  // 4. Detect passenger count
-  const passMatch = lower.match(/(\d+)\s*(பேர்|persons?|people|passengers?|பயணி)/);
-  if (passMatch) result.passengers = parseInt(passMatch[1], 10);
-
-  // 5. Assign confidence
-  let score = 0;
-  if (result.source) score++;
-  if (result.destination) score++;
-  if (result.travelType) score++;
-  if (result.date) score++;
-  result.confidence = score >= 3 ? 'high' : score >= 2 ? 'medium' : 'low';
 
   return result;
 };
 
-// @desc    Process Tamil NLP input and return structured journey data
+// @desc    Process Tamil NLP input using Gemini AI
 // @route   POST /api/nlp/parse
 // @access  Public
 const parseNLPInput = async (req, res, next) => {
   try {
-    const { text, language } = req.body;
+    const { text } = req.body;
 
     if (!text || text.trim().length === 0) {
       return res.status(400).json({
         success: false,
-        message: 'உரை உள்ளீடு தேவை', // Text input required
+        message: 'உரை உள்ளீடு தேவை', 
       });
     }
 
-    const parsed = parseTamilInput(text.trim());
+    let parsed = null;
+    
+    // Try Gemini first
+    if (process.env.GEMINI_API_KEY) {
+      console.log('Attempting AI parsing with Gemini...');
+      parsed = await parseTravelIntent(text);
+      if (parsed) console.log('AI Parsing successful:', parsed);
+      else console.error('AI Parsing failed (returned null)');
+    } else {
+      console.warn('GEMINI_API_KEY is missing in .env');
+    }
+
+    // Fallback to legacy if Gemini fails or is not configured
+    if (!parsed) {
+      console.log('Falling back to legacy parsing logic...');
+      parsed = parseTamilInputLegacy(text);
+    }
 
     const suggestions = [];
-    if (!parsed.source) suggestions.push('புறப்படும் இடம் குறிப்பிடவும்'); // Specify departure city
-    if (!parsed.destination) suggestions.push('செல்லும் இடம் குறிப்பிடவும்'); // Specify destination
-    if (!parsed.travelType) suggestions.push('பயண வகை (ரயில்/பஸ்/விமானம்) குறிப்பிடவும்'); // Specify travel type
-    if (!parsed.date) suggestions.push('பயண தேதி குறிப்பிடவும்'); // Specify travel date
+    if (!parsed.source) suggestions.push('புறப்படும் இடம் குறிப்பிடவும்');
+    if (!parsed.destination) suggestions.push('செல்லும் இடம் குறிப்பிடவும்');
 
     res.status(200).json({
       success: true,
       parsed,
       suggestions,
       searchUrl: parsed.source && parsed.destination
-        ? `/api/travel/search?source=${parsed.source}&destination=${parsed.destination}${parsed.travelType ? `&type=${parsed.travelType}` : ''}${parsed.date ? `&date=${parsed.date}` : ''}`
+        ? `/api/travel/search?source=${parsed.sourceCode || parsed.source}&destination=${parsed.destinationCode || parsed.destination}${parsed.travelType ? `&type=${parsed.travelType}` : ''}${parsed.date ? `&date=${parsed.date}` : ''}`
         : null,
     });
   } catch (error) {
@@ -175,3 +148,4 @@ const getCitySuggestions = async (req, res, next) => {
 };
 
 module.exports = { parseNLPInput, getCitySuggestions };
+

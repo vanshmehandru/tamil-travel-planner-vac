@@ -26,20 +26,28 @@ const parseTravelIntent = async (text) => {
     CRITICAL TAMIL GRAMMAR RULES:
     - Words ending in "-இருந்து" (-irundhu) or "-லிருந்து" (-lirundhu) are the SOURCE (e.g., "சென்னையிலிருந்து" = From Chennai).
     - Words ending in "-க்கு" (-ku) or "-நோக்கி" (-nokki) are the DESTINATION (e.g., "மதுரைக்கு" = To Madurai).
-    - If no markers are present and only one city is mentioned, assume it is the DESTINATION if the user says "போகணும்" (want to go) or "பயணம்" (travel).
+    - If no markers are present and only one city is mentioned, assume it is the DESTINATION.
+    
+    TAMIL DATE EXAMPLES:
+    - "10 மே" -> Month 05, Day 10.
+    - "ஜனவரி 25" -> Month 01, Day 25.
     
     EXTRACT the following fields in JSON format:
-    - source: (String) Departure city. Standard English name.
-    - sourceCode: (String) Railway/Station code (e.g., MAS, CBE, MDU, TPJ).
-    - destination: (String) Arrival city. Standard English name.
-    - destinationCode: (String) Railway/Station code.
+    - source: (String) Departure city. List: [Chennai, Coimbatore, Madurai, Trichy, Salem, Vellore, Erode, Ooty, Bangalore].
+    - sourceCode: (String) REQUIRED code from: [MAS, CBE, MDU, TPJ, SA, VLR, ED, UAM, SBC].
+    - destination: (String) Arrival city.
+    - destinationCode: (String) REQUIRED code.
     - travelType: (String) "train", "bus", or "flight".
-    - date: (String) YYYY-MM-DD format relative to today (${new Date().toISOString().split('T')[0]}).
-    - passengers: (Number) Count or 1.
+    - date: (String) YYYY-MM-DD. 
+      * Parse: "10 மே", "tomorrow" (நாளை), "next week" (அடுத்த வாரம்). 
+      * Reference today: ${new Date().toISOString().split('T')[0]}.
+    - passengers: (Number) Integer.
     - confidence: "high", "medium", or "low".
     
-    If the input is incomplete, fill what you can and leave others as null.
-    Return ONLY JSON.
+    If name ends in "-இருந்து" or "-லிருந்து" it is SOURCE.
+    If name ends in "-க்கு" it is DESTINATION.
+    
+    Return ONLY VALID JSON.
   `;
 
   try {
@@ -50,7 +58,13 @@ const parseTravelIntent = async (text) => {
     // Clean JSON if Gemini returns markdown blocks
     jsonStr = jsonStr.replace(/```json/g, "").replace(/```/g, "").trim();
     
-    return JSON.parse(jsonStr);
+    const parsed = JSON.parse(jsonStr);
+    console.log('--- AI RAW PARSE RESULT ---');
+    console.log('Text:', text);
+    console.log('Parsed:', parsed);
+    console.log('---------------------------');
+    
+    return parsed;
   } catch (error) {
     console.error("Gemini Parsing Error Details:", error);
     return null;

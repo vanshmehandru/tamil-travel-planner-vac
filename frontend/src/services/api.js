@@ -52,6 +52,9 @@ export const ticketAPI = {
   getByPNR: (pnrNumber) => apiClient.get(`/tickets/pnr/${pnrNumber}`),
   getById: (id) => apiClient.get(`/tickets/${id}`),
   downloadTicket: (id) => apiClient.get(`/tickets/${id}/download`),
+  saveTicket: (id) => apiClient.post(`/tickets/${id}/save`),
+  unsaveTicket: (id) => apiClient.delete(`/tickets/${id}/save`),
+  checkIsSaved: (id) => apiClient.get(`/tickets/${id}/is-saved`),
 };
 
 export const nlpAPI = {

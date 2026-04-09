@@ -5,6 +5,9 @@ const {
   getTicketByPNR,
   getMyTickets,
   downloadTicket,
+  saveTicket,
+  unsaveTicket,
+  checkIsSaved,
 } = require('../controllers/ticketController');
 const { protect } = require('../middleware/auth');
 
@@ -13,6 +16,15 @@ router.get('/my-tickets', protect, getMyTickets);
 
 // GET /api/tickets/pnr/:pnrNumber  (public PNR check)
 router.get('/pnr/:pnrNumber', getTicketByPNR);
+
+// GET /api/tickets/:ticketId/is-saved
+router.get('/:ticketId/is-saved', protect, checkIsSaved);
+
+// POST /api/tickets/:ticketId/save
+router.post('/:ticketId/save', protect, saveTicket);
+
+// DELETE /api/tickets/:ticketId/save
+router.delete('/:ticketId/save', protect, unsaveTicket);
 
 // GET /api/tickets/:ticketId
 router.get('/:ticketId', protect, getTicketById);

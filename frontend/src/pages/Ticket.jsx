@@ -1,22 +1,22 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { QRCodeSVG } from 'qrcode.react';
+import { QRCodeCanvas } from 'qrcode.react'; 
 import { NavBar } from '../components/NavBar';
 import { ticketAPI } from '../services/api';
-import { Printer, Download, Save, QrCode, Train, Bus, Plane } from 'lucide-react';
+import { Printer, Save, Bookmark, BookmarkCheck, QrCode, Train, Bus, Plane, Loader2 } from 'lucide-react';
 
 export function Ticket() {
   const { ticketId } = useParams();
   const navigate = useNavigate();
   const [ticket, setTicket] = useState(null);
-  const [isSaving, setIsSaving] = useState(false);
   const printRef = useRef();
 
   useEffect(() => {
     const fetchTicket = async () => {
       try {
         const res = await ticketAPI.getById(ticketId);
-        setTicket(res.data.data || res.data);
+        const data = res.data.data || res.data;
+        setTicket(data);
       } catch (err) {
          console.warn("Using mock ticket for demonstration", err);
          setTicket({
@@ -47,16 +47,6 @@ export function Ticket() {
     window.print();
   };
 
-  const handleSave = () => {
-    setIsSaving(true);
-    setTimeout(() => {
-      setIsSaving(false);
-      alert('டிக்கெட் சேமிக்கப்பட்டது!');
-    }, 1000);
-  };
-
-  const handleDownload = () => handlePrint(); 
-
   if (!ticket) return <div className="min-h-screen pt-20 text-center font-bold text-xl">Loading...</div>;
 
   const journey = ticket.journeyDetails || {};
@@ -68,7 +58,7 @@ export function Ticket() {
       
       <div className="max-w-2xl mx-auto px-4 mt-8 md:mt-12">
         {/* Ticket Card */}
-        <div ref={printRef} className="bg-white/90 backdrop-blur-md border border-white/60 rounded-xl shadow-2xl overflow-hidden print-only-card relative">
+        <div ref={printRef} className="bg-white border-2 border-slate-200 rounded-xl shadow-lg overflow-hidden print-only-card relative">
            {/* Top Section */}
            <div className="bg-gradient-to-r from-blue-800 to-primary text-white p-6 pb-8">
               <div className="flex justify-between items-center mb-6">
@@ -101,10 +91,13 @@ export function Ticket() {
                     <p className="font-bold text-primary text-lg">{journey.sourceName}</p>
                  </div>
                  <div className="text-center flex flex-col items-center flex-1 px-4">
-                    <p className="text-sm font-bold text-brandMutedText bg-gray-50 px-3 py-1 rounded-full mb-2">{journey.duration}</p>
-                    <div className="w-full relative flex items-center justify-center">
-                      <div className="w-full border-t-2 border-dashed border-gray-300"></div>
-                      <div className="absolute font-bold text-xl text-gray-400">➔</div>
+                    <p className="text-sm font-bold text-brandMutedText bg-slate-50 px-3 py-1 rounded-full mb-2">{journey.duration}</p>
+                    <div className="w-full relative flex items-center justify-center h-4">
+                      {/* SVG dashed line is much more stable for image capture than CSS dashed borders */}
+                      <svg className="w-full h-1" preserveAspectRatio="none">
+                        <line x1="0" y1="0" x2="100%" y2="0" stroke="#CBD5E1" strokeWidth="2" strokeDasharray="4,4" />
+                      </svg>
+                      <div className="absolute font-bold text-xl text-slate-300 bg-white px-2">➔</div>
                     </div>
                  </div>
                  <div className="text-center w-1/3">
@@ -133,7 +126,7 @@ export function Ticket() {
                  </div>
               </div>
 
-              <div className="mb-6 bg-white/50 backdrop-blur-sm border border-white/50 rounded-lg p-4">
+              <div className="mb-6 bg-slate-50 border border-slate-200 rounded-lg p-4">
                  <h3 className="font-bold text-brandDarkText mb-3 border-b pb-2">பயணிகள் விவரம்</h3>
                  <table className="w-full text-left font-medium">
                     <thead className="text-brandMutedText text-xs">
@@ -158,18 +151,18 @@ export function Ticket() {
 
            {/* Bottom Section */}
            <div className="bg-brandLightBlue p-6 flex flex-col items-center justify-center border-t border-blue-100">
-              <div className="bg-white p-2 rounded shadow-sm mb-3 border">
-                 <QRCodeSVG value={ticket.pnrNumber || ticket.ticketId} size={100} />
-              </div>
+               <div className="bg-white p-2 rounded shadow-sm mb-3 border border-slate-100">
+                  <QRCodeCanvas value={ticket.pnrNumber || ticket.ticketId} size={150} />
+               </div>
               <p className="text-sm font-bold text-primary">கேட்டில் / தளத்தில் காட்டவும்</p>
            </div>
         </div>
 
         {/* Action Buttons */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8 no-print">
-           <button onClick={handleDownload} className="btn-primary w-full shadow"><Download className="mr-2"/> பதிவிறக்கு</button>
-           <button onClick={handlePrint} className="btn-secondary w-full shadow border border-blue-200"><Printer className="mr-2"/> அச்சிடு</button>
-           <button onClick={handleSave} className="bg-white text-primary font-bold py-3 px-6 rounded-btn border-2 border-primary hover:bg-blue-50 flex justify-center items-center"><Save className="mr-2"/> டிக்கெட் சேமி</button>
+        <div className="flex justify-center mt-8 no-print max-w-lg mx-auto w-full">
+           <button onClick={handlePrint} className="btn-primary px-12 py-4 shadow-lg flex justify-center items-center text-lg">
+             <Printer className="mr-2"/> டிக்கெட் அச்சிடு
+           </button>
         </div>
       </div>
     </div>

@@ -22,6 +22,33 @@ const CITY_MAP = {
   ஓட்டி: 'UAM', ooty: 'UAM', உதகமண்டலம்: 'UAM',
   பெங்களூர்: 'SBC', bangalore: 'SBC', பெங்களூரு: 'SBC',
 };
+const DATE_KEYWORDS = {
+  today: ['இன்று', 'today', 'now', 'இன்னைக்கு'],
+  tomorrow: ['நாளை', 'tomorrow', 'நாளைக்கு'],
+  dayAfter: ['மறுநாள்', 'day after tomorrow', 'நாளை மறுநாள்'],
+};
+const TAMIL_NUMBERS = {
+  1: ['ஒரு', 'ஒன்று', 'ஒன்னு', 'one'],
+  2: ['இரண்டு', 'ரெண்டு', 'two'],
+  3: ['மூன்று', 'மூனு', 'three'],
+  4: ['நான்கு', 'நாலு', 'four'],
+  5: ['ஐந்து', 'அஞ்சு', 'five'],
+  6: ['ஆறு', 'six'],
+};
+const TAMIL_MONTHS = {
+  1: ['ஜனவரி', 'january', 'jan'],
+  2: ['பிப்ரவரி', 'february', 'feb'],
+  3: ['மார்ச்', 'march', 'mar'],
+  4: ['ஏப்ரல்', 'april', 'apr'],
+  5: ['மே', 'may'],
+  6: ['ஜூன்', 'june', 'jun'],
+  7: ['ஜூலை', 'july', 'jul'],
+  8: ['ஆகஸ்ட்', 'august', 'aug'],
+  9: ['செப்டம்பர்', 'september', 'sep'],
+  10: ['அக்டோபர்', 'october', 'oct'],
+  11: ['நவம்பர்', 'november', 'nov'],
+  12: ['டிசம்பர்', 'december', 'dec'],
+};
 
 // ... existing maps for fallback ...
 const FROM_MARKERS = ['இருந்து', 'லிருந்து', 'from', 'புறப்பட', 'start'];
@@ -74,6 +101,47 @@ const parseTamilInputLegacy = (text) => {
     }
   }
 
+  // Passenger detection (Regex for "N பேர்" or keywords)
+  for (const [num, keywords] of Object.entries(TAMIL_NUMBERS)) {
+    if (keywords.some(kw => lower.includes(kw))) {
+      result.passengers = parseInt(num);
+      break;
+    }
+  }
+  const digitMatch = lower.match(/(\d+)\s*(பேர்|passengers|people|person)/);
+  if (digitMatch) {
+    result.passengers = Math.min(6, Math.max(1, parseInt(digitMatch[1])));
+  }
+
+  // Basic date detection
+  const today = new Date();
+  if (DATE_KEYWORDS.today.some(kw => lower.includes(kw))) {
+    result.date = today.toISOString().split('T')[0];
+  } else if (DATE_KEYWORDS.tomorrow.some(kw => lower.includes(kw))) {
+    today.setDate(today.getDate() + 1);
+    result.date = today.toISOString().split('T')[0];
+  } else if (DATE_KEYWORDS.dayAfter.some(kw => lower.includes(kw))) {
+    today.setDate(today.getDate() + 2);
+    result.date = today.toISOString().split('T')[0];
+  } else {
+    // Regex for specific date like "10 மே" or "மே 10" or "10/5/2026"
+    for (const [mIndex, keywords] of Object.entries(TAMIL_MONTHS)) {
+      if (keywords.some(kw => lower.includes(kw))) {
+        const monthNum = mIndex.padStart(2, '0');
+        const dayMatch = lower.match(new RegExp(`(\\d{1,2})\\s*(${keywords.join('|')})`)) || 
+                         lower.match(new RegExp(`(${keywords.join('|')})\\s*(\\d{1,2})`));
+        
+        if (dayMatch) {
+          const day = (dayMatch[1].match(/^\d+$/) ? dayMatch[1] : dayMatch[2]).padStart(2, '0');
+          const yearMatch = lower.match(/\d{4}/);
+          const year = yearMatch ? yearMatch[0] : new Date().getFullYear();
+          result.date = `${year}-${monthNum}-${day}`;
+          break;
+        }
+      }
+    }
+  }
+
   return result;
 };
 
@@ -104,7 +172,7 @@ const parseNLPInput = async (req, res, next) => {
     }
 
     // Fallback to legacy if Gemini fails or is not configured
-    if (!parsed) {
+    if (!parsed || (!parsed.source && !parsed.destination)) {
       console.log('Falling back to legacy parsing logic...');
       parsed = parseTamilInputLegacy(text);
     }
@@ -118,7 +186,7 @@ const parseNLPInput = async (req, res, next) => {
       parsed,
       suggestions,
       searchUrl: parsed.source && parsed.destination
-        ? `/api/travel/search?source=${parsed.sourceCode || parsed.source}&destination=${parsed.destinationCode || parsed.destination}${parsed.travelType ? `&type=${parsed.travelType}` : ''}${parsed.date ? `&date=${parsed.date}` : ''}`
+        ? `/api/travel/search?source=${parsed.sourceCode || parsed.source}&destination=${parsed.destinationCode || parsed.destination}${parsed.travelType ? `&type=${parsed.travelType}` : ''}${parsed.date ? `&date=${parsed.date}` : ''}${parsed.passengers ? `&passengers=${parsed.passengers}` : ''}`
         : null,
     });
   } catch (error) {

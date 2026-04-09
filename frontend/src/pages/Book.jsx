@@ -4,7 +4,7 @@ import { NavBar } from '../components/NavBar';
 import { useBookingStore } from '../store/bookingStore';
 import { useSearchStore } from '../store/searchStore';
 import { bookingAPI } from '../services/api';
-import { ArrowLeft, UserPlus, CheckCircle2, ShieldCheck, Wallet, Loader2 } from 'lucide-react';
+import { ArrowLeft, UserPlus, CheckCircle2, ShieldCheck, Wallet, Loader2, Trash2 } from 'lucide-react';
 
 export function Book() {
   const { id } = useParams();
@@ -136,7 +136,16 @@ export function Book() {
               <div key={idx} className="glassmorphism rounded-card shadow-sm p-6 relative border border-white/40">
                 <div className="flex justify-between items-center border-b pb-4 mb-4">
                   <h3 className="font-bold text-lg text-primary">பயணி {idx + 1}</h3>
-                  {idx > 0 && <button onClick={() => removePassenger(idx)} className="text-brandRed text-sm font-semibold hover:underline">நீக்கு</button>}
+                  {idx > 0 && (
+                    <button 
+                      onClick={() => removePassenger(idx)} 
+                      className="flex items-center text-brandRed hover:bg-red-50 px-3 py-1.5 rounded-lg border border-red-100 transition-colors duration-200"
+                      title="பயணியை நீக்கு"
+                    >
+                      <Trash2 size={16} className="mr-1.5" />
+                      <span className="text-sm font-bold">நீக்கு</span>
+                    </button>
+                  )}
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">

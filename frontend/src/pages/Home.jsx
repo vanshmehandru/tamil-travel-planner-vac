@@ -14,26 +14,43 @@ export function Home() {
   const { source, destination, travelDate, passengers, travelType, setSearchParams } = useSearchStore();
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [nlpChip, setNlpChip] = useState('');
-
   const applyParsedResult = (parsed) => {
     if (!parsed) return;
-    setSearchParams({
-      source: parsed.source || source,
-      destination: parsed.destination || destination,
-      travelType: parsed.travelType || travelType,
-      travelDate: parsed.date || travelDate,
-      passengers: parsed.passengers || passengers,
-    });
+    
+    // Debug log to help identify why Coimbatore vs Madurai or Dates might fail
+    console.log('Applying parsed result to UI:', parsed);
 
     const s = parsed.source || source;
     const d = parsed.destination || destination;
     
-    if (s && d) {
-       setNlpChip(`${s} ➔ ${d}${parsed.travelType ? `, ${parsed.travelType}` : ''}`);
-    } else if (d) {
-       setNlpChip(`சேருமிடம்: ${d}${parsed.travelType ? `, ${parsed.travelType}` : ''} (புறப்படும் ஊரை தேர்வு செய்யவும்)`);
-    } else if (s) {
-       setNlpChip(`புறப்படுமிடம்: ${s} (சேரும் ஊரை தேர்வு செய்யவும்)`);
+    // Ensure numeric passengers
+    const pCount = parsed.passengers ? parseInt(parsed.passengers) : passengers;
+    const validPCount = Math.min(6, Math.max(1, pCount));
+
+    // Prepare update object
+    const updates = {
+      source: s,
+      destination: d,
+      travelType: parsed.travelType || travelType,
+      passengers: validPCount,
+    };
+
+    // ONLY update date if AI actually found one
+    if (parsed.date && parsed.date.length >= 10) {
+      updates.travelDate = parsed.date;
+    }
+
+    setSearchParams(updates);
+
+    let chipText = '';
+    if (s && d) chipText = `${s} ➔ ${d}`;
+    else if (d) chipText = `சேருமிடம்: ${d}`;
+    else if (s) chipText = `புறப்படுமிடம்: ${s}`;
+
+    if (chipText) {
+      if (parsed.date) chipText += ` | ${new Date(parsed.date).toLocaleDateString('ta-IN', { day: 'numeric', month: 'short' })}`;
+      if (parsed.passengers) chipText += ` | ${parsed.passengers} பயணிகள்`;
+      setNlpChip(chipText);
     }
   };
 

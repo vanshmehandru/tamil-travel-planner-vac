@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { NavBar } from '../components/NavBar';
 import { useAuthStore } from '../store/authStore';
 import { authAPI, bookingAPI, ticketAPI } from '../services/api';
-import { User, Package, Bookmark, Settings, LogOut } from 'lucide-react';
+import { User, Package, Bookmark, Settings, LogOut, Edit2, Save, X, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export function Account() {
@@ -11,6 +11,15 @@ export function Account() {
   const [activeTab, setActiveTab] = useState('profile');
   const [bookings, setBookings] = useState([]);
   const [savedTickets, setSavedTickets] = useState([]);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const { setUser } = useAuthStore();
+  const [editForm, setEditForm] = useState({
+    username: user?.username || '',
+    email: user?.email || '',
+    age: user?.age || '',
+    gender: user?.gender || ''
+  });
 
   const location = window.location; // Fallback if useLocation not imported yet, but I'll add the import
 
@@ -56,6 +65,32 @@ export function Account() {
     } catch (err) {
       console.error(err);
       alert('ரத்து செய்வதில் பிழை: ' + (err.response?.data?.message || err.message));
+    }
+  };
+
+  const handleUnsave = async (ticketId) => {
+    try {
+      await ticketAPI.unsaveTicket(ticketId);
+      setSavedTickets(savedTickets.filter(t => t.ticketId !== ticketId));
+    } catch (err) {
+      console.error(err);
+      alert('நீக்குவதில் பிழை ஏற்பட்டது');
+    }
+  };
+
+  const handleSaveProfile = async () => {
+    setIsSaving(true);
+    try {
+      const res = await authAPI.updateProfile(editForm);
+      const updatedUser = res.data.data || res.data;
+      setUser(updatedUser);
+      setIsEditing(false);
+      alert('சுயவிவரம் புதுப்பிக்கப்பட்டது! (Profile updated!)');
+    } catch (err) {
+      console.error(err);
+      alert('புதுப்பிப்பதில் பிழை: ' + (err.response?.data?.message || err.message));
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -107,14 +142,63 @@ export function Account() {
             <div className="glassmorphism p-6 rounded-card shadow-sm border border-white/40 slide-in">
               <div className="flex justify-between items-center mb-6 border-b pb-4">
                 <h2 className="text-2xl font-bold text-brandDarkText">சுயவிவரம்</h2>
-                <button className="text-primary font-bold hover:underline">திருத்து</button>
+                {!isEditing ? (
+                  <button onClick={() => {
+                    setEditForm({
+                      username: user?.username,
+                      email: user?.email,
+                      age: user?.age,
+                      gender: user?.gender
+                    });
+                    setIsEditing(true);
+                  }} className="flex items-center text-primary font-bold hover:underline">
+                    <Edit2 size={16} className="mr-1" /> திருத்து
+                  </button>
+                ) : (
+                  <div className="flex space-x-3">
+                    <button onClick={handleSaveProfile} disabled={isSaving} className="flex items-center text-green-600 font-bold hover:underline disabled:opacity-50">
+                      {isSaving ? <Loader2 size={16} className="animate-spin mr-1" /> : <Save size={16} className="mr-1" />} சேமி
+                    </button>
+                    <button onClick={() => setIsEditing(false)} className="flex items-center text-brandRed font-bold hover:underline">
+                      <X size={16} className="mr-1" /> ரத்து
+                    </button>
+                  </div>
+                )}
               </div>
-              <div className="space-y-4 max-w-md">
-                <div><label className="text-sm text-brandMutedText font-semibold">பெயர்</label><p className="font-bold text-lg">{user?.username || '-'}</p></div>
-                <div><label className="text-sm text-brandMutedText font-semibold">மின்னஞ்சல்</label><p className="font-bold text-lg">{user?.email || '-'}</p></div>
-                <div><label className="text-sm text-brandMutedText font-semibold">வயது</label><p className="font-bold text-lg">{user?.age || '-'}</p></div>
-                <div><label className="text-sm text-brandMutedText font-semibold">பாலினம்</label><p className="font-bold text-lg">{user?.gender || '-'}</p></div>
-              </div>
+
+              {!isEditing ? (
+                <div className="space-y-4 max-w-md">
+                  <div><label className="text-sm text-brandMutedText font-semibold">பெயர்</label><p className="font-bold text-lg">{user?.username || '-'}</p></div>
+                  <div><label className="text-sm text-brandMutedText font-semibold">மின்னஞ்சல்</label><p className="font-bold text-lg">{user?.email || '-'}</p></div>
+                  <div><label className="text-sm text-brandMutedText font-semibold">வயது</label><p className="font-bold text-lg">{user?.age || '-'}</p></div>
+                  <div><label className="text-sm text-brandMutedText font-semibold">பாலினம்</label><p className="font-bold text-lg">{(user?.gender === 'male' || user?.gender === 'ஆண்') ? 'ஆண்' : (user?.gender === 'female' || user?.gender === 'பெண்') ? 'பெண்' : user?.gender || '-'}</p></div>
+                </div>
+              ) : (
+                <div className="space-y-4 max-w-md">
+                  <div>
+                    <label className="text-sm text-brandMutedText font-semibold">பெயர்</label>
+                    <input type="text" value={editForm.username} onChange={(e) => setEditForm({...editForm, username: e.target.value})} className="input-field mt-1" />
+                  </div>
+                  <div>
+                    <label className="text-sm text-brandMutedText font-semibold">மின்னஞ்சல்</label>
+                    <input type="email" value={editForm.email} onChange={(e) => setEditForm({...editForm, email: e.target.value})} className="input-field mt-1" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm text-brandMutedText font-semibold">வயது</label>
+                      <input type="number" value={editForm.age} onChange={(e) => setEditForm({...editForm, age: e.target.value})} className="input-field mt-1" />
+                    </div>
+                    <div>
+                      <label className="text-sm text-brandMutedText font-semibold">பாலினம்</label>
+                      <select value={editForm.gender} onChange={(e) => setEditForm({...editForm, gender: e.target.value})} className="input-field mt-1">
+                        <option value="ஆண்">ஆண்</option>
+                        <option value="பெண்">பெண்</option>
+                        <option value="மற்றவை">மற்றவை</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -155,24 +239,30 @@ export function Account() {
                <h2 className="text-2xl font-bold text-brandDarkText mb-6">சேமித்த டிக்கெட்கள்</h2>
                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                  {savedTickets.length > 0 ? savedTickets.map((t) => (
-                   <div key={t._id} className="glassmorphism p-6 rounded-card shadow-sm border border-white/40">
-                      <div className="flex justify-between items-start mb-4">
-                         <div>
-                            <p className="text-xs text-brandMutedText font-bold uppercase">PNR: {t.pnrNumber}</p>
-                            <h3 className="font-bold text-lg">{t.journeyDetails?.sourceName} ➔ {t.journeyDetails?.destinationName}</h3>
-                         </div>
-                         <div className={`px-2 py-1 rounded text-[10px] font-bold ${t.isValid ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>
-                            {t.isValid ? 'உறுதி' : 'செல்லாது'}
-                         </div>
-                      </div>
-                      <p className="text-sm text-brandMutedText font-semibold mb-4">
-                        {new Date(t.journeyDetails?.travelDate).toLocaleDateString('ta-IN')} | {t.journeyDetails?.travelClass}
-                      </p>
-                      <div className="flex space-x-2">
-                         <button onClick={() => navigate(`/ticket/${t.ticketId}`)} className="flex-1 text-primary font-bold bg-blue-50 py-2 rounded-btn text-sm">பார்</button>
-                         <button onClick={() => navigate(`/ticket/${t.ticketId}`)} className="flex-1 text-brandDarkText font-bold bg-gray-100 py-2 rounded-btn text-sm">பதிவிறக்கு</button>
-                      </div>
-                   </div>
+                    <div key={t._id} className="glassmorphism p-6 rounded-card shadow-sm border border-white/40 flex flex-col justify-between">
+                       <div>
+                          <div className="flex justify-between items-start mb-4">
+                             <div>
+                                <p className="text-xs text-brandMutedText font-bold uppercase">PNR: {t.pnrNumber}</p>
+                                <h3 className="font-bold text-lg">{t.journeyDetails?.sourceName} ➔ {t.journeyDetails?.destinationName}</h3>
+                             </div>
+                             <div className={`px-2 py-1 rounded text-[10px] font-bold ${t.isValid ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>
+                                {t.isValid ? 'உறுதி' : 'செல்லாது'}
+                             </div>
+                          </div>
+                          <p className="text-sm text-brandMutedText font-semibold mb-4">
+                            {new Date(t.journeyDetails?.travelDate).toLocaleDateString('ta-IN')} | {t.journeyDetails?.travelClass}
+                          </p>
+                       </div>
+                       <div className="flex space-x-2 mt-2">
+                          <button onClick={() => navigate(`/ticket/${t.ticketId}`)} className="flex-1 text-primary font-bold bg-blue-50 py-2 rounded-btn text-sm">பார்</button>
+                          {t.isBookmarked ? (
+                             <button onClick={() => handleUnsave(t.ticketId)} className="flex-1 text-brandRed font-bold bg-red-50 py-2 rounded-btn text-sm">நீக்கு</button>
+                          ) : (
+                             <button onClick={() => navigate(`/ticket/${t.ticketId}`)} className="flex-1 text-brandDarkText font-bold bg-gray-100 py-2 rounded-btn text-sm">பதிவிறக்கு</button>
+                          )}
+                       </div>
+                    </div>
                  )) : (
                    <div className="col-span-full text-center py-12 glassmorphism rounded-card border border-white/40 text-brandMutedText">
                       <p className="text-lg font-bold">டிக்கெட்கள் ஏதுமில்லை</p>

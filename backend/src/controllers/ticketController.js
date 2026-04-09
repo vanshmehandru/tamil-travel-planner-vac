@@ -1,5 +1,6 @@
 const Ticket = require('../models/Ticket');
 const Booking = require('../models/Booking');
+const SavedTicket = require('../models/SavedTicket');
 
 // @desc    Get ticket by ticket ID
 // @route   GET /api/tickets/:ticketId
@@ -58,19 +59,37 @@ const getTicketByPNR = async (req, res, next) => {
   }
 };
 
-// @desc    Get all tickets for a user
+// @desc    Get all tickets for a user (Owned + Saved)
 // @route   GET /api/tickets/my-tickets
 // @access  Private
 const getMyTickets = async (req, res, next) => {
   try {
-    const tickets = await Ticket.find({ userId: req.user.id })
-      .sort({ createdAt: -1 })
-      .select('-__v');
+    // 1. Get owned tickets
+    const ownedTickets = await Ticket.find({ userId: req.user.id })
+      .sort({ createdAt: -1 });
+
+    // 2. Get saved (bookmarked) tickets
+    const savedRelations = await SavedTicket.find({ userId: req.user.id })
+      .populate('ticketId')
+      .sort({ createdAt: -1 });
+    
+    const savedTickets = savedRelations
+      .filter(rel => rel.ticketId) // ensure ticket still exists
+      .map(rel => ({
+        ...rel.ticketId.toObject(),
+        isBookmarked: true
+      }));
+
+    // 3. Combine and remove duplicates (if user owns a ticket they also saved)
+    const ownedTicketIds = new Set(ownedTickets.map(t => t._id.toString()));
+    const additionalSaved = savedTickets.filter(t => !ownedTicketIds.has(t._id.toString()));
+
+    const allTickets = [...ownedTickets.map(t => ({ ...t.toObject(), isBookmarked: false })), ...additionalSaved];
 
     res.status(200).json({
       success: true,
-      count: tickets.length,
-      data: tickets,
+      count: allTickets.length,
+      data: allTickets,
     });
   } catch (error) {
     next(error);
@@ -128,4 +147,79 @@ const downloadTicket = async (req, res, next) => {
   }
 };
 
-module.exports = { getTicketById, getTicketByPNR, getMyTickets, downloadTicket };
+// @desc    Save/Bookmark a ticket
+// @route   POST /api/tickets/:ticketId/save
+// @access  Private
+const saveTicket = async (req, res, next) => {
+  try {
+    const ticket = await Ticket.findOne({ ticketId: req.params.ticketId });
+    if (!ticket) {
+      return res.status(404).json({ success: false, message: 'டிக்கெட் கிடைக்கவில்லை' });
+    }
+
+    // Check if already saved
+    const existing = await SavedTicket.findOne({ userId: req.user.id, ticketId: ticket._id });
+    if (existing) {
+      return res.status(200).json({ success: true, message: 'ஏற்கனவே சேமிக்கப்பட்டுள்ளது' });
+    }
+
+    await SavedTicket.create({
+      userId: req.user.id,
+      ticketId: ticket._id,
+      customTicketId: ticket.ticketId
+    });
+
+    res.status(201).json({ success: true, message: 'டிக்கெட் சேமிக்கப்பட்டது' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Remove saved ticket
+// @route   DELETE /api/tickets/:ticketId/save
+// @access  Private
+const unsaveTicket = async (req, res, next) => {
+  try {
+    // We expect the custom ticketId (NYT-TKT-...)
+    const ticket = await Ticket.findOne({ ticketId: req.params.ticketId });
+    if (!ticket) {
+      return res.status(404).json({ success: false, message: 'டிக்கெட் கிடைக்கவில்லை' });
+    }
+
+    await SavedTicket.findOneAndDelete({ userId: req.user.id, ticketId: ticket._id });
+
+    res.status(200).json({ success: true, message: 'சேமிப்பிலிருந்து நீக்கப்பட்டது' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Check if ticket is saved
+// @route   GET /api/tickets/:ticketId/is-saved
+// @access  Private
+const checkIsSaved = async (req, res, next) => {
+  try {
+    const ticket = await Ticket.findOne({ ticketId: req.params.ticketId });
+    if (!ticket) return res.status(200).json({ isSaved: false });
+
+    const saved = await SavedTicket.findOne({ userId: req.user.id, ticketId: ticket._id });
+    const isOwner = ticket.userId.toString() === req.user.id.toString();
+
+    res.status(200).json({ 
+      isSaved: !!saved,
+      isOwner: isOwner
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = { 
+  getTicketById, 
+  getTicketByPNR, 
+  getMyTickets, 
+  downloadTicket,
+  saveTicket,
+  unsaveTicket,
+  checkIsSaved
+};

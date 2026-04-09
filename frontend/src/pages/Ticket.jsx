@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useReactToPrint } from 'react-to-print';
-import { QRCodeSVG } from 'qrcode.react'; // I'll use standard qr if available or substitute
+import { QRCodeSVG } from 'qrcode.react';
 import { NavBar } from '../components/NavBar';
 import { ticketAPI } from '../services/api';
 import { Printer, Download, Save, QrCode, Train, Bus, Plane } from 'lucide-react';
@@ -44,10 +43,9 @@ export function Ticket() {
     fetchTicket();
   }, [ticketId]);
 
-  const handlePrint = useReactToPrint({
-    content: () => printRef.current,
-    documentTitle: `Namma_Yatri_Ticket_${ticketId}`,
-  });
+  const handlePrint = () => {
+    window.print();
+  };
 
   const handleSave = () => {
     setIsSaving(true);
@@ -154,7 +152,7 @@ export function Ticket() {
 
               <div className="flex justify-between items-center font-bold text-lg border-t pt-4">
                  <span className="text-brandMutedText">மொத்தம்</span>
-                 <span className="text-primary text-2xl">₹{ticket.totalAmount}</span>
+                 <span className="text-primary text-2xl">₹{ticket.fareDetails?.totalAmount || ticket.totalAmount || '-'}</span>
               </div>
            </div>
 

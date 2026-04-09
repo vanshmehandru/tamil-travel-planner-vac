@@ -44,6 +44,21 @@ export function Account() {
     navigate('/login');
   };
 
+  const handleCancel = async (bookingId) => {
+    if (!window.confirm('இந்த பயணத்தை ரத்து செய்ய விரும்புகிறீர்களா? (Are you sure you want to cancel?)')) return;
+    
+    try {
+      await bookingAPI.cancelBooking(bookingId);
+      alert('பயணம் ரத்து செய்யப்பட்டது! (Journey cancelled!)');
+      // Refresh current tab data
+      const res = await bookingAPI.getMyBookings();
+      setBookings(res.data.data || res.data || []);
+    } catch (err) {
+      console.error(err);
+      alert('ரத்து செய்வதில் பிழை: ' + (err.response?.data?.message || err.message));
+    }
+  };
+
   const tabs = [
     { id: 'profile', icon: User, label: 'சுயவிவரம்' },
     { id: 'bookings', icon: Package, label: 'என் பயணங்கள்' },
@@ -122,13 +137,45 @@ export function Account() {
                          <p className="text-brandMutedText font-semibold mt-1">₹{b.totalAmount} | {b.travelType === 'train' ? 'ரயில்' : b.travelType === 'bus' ? 'பஸ்' : 'விமானம்'}</p>
                       </div>
                       <div className="mt-4 md:mt-0 flex space-x-3">
-                          <button onClick={() => navigate(`/ticket/${b.ticketId?._id || b.ticketId || b._id}`)} className="text-primary font-bold bg-blue-50 px-4 py-2 rounded-btn">டிக்கெட் பார்</button>
-                          {b.bookingStatus !== 'cancelled' && <button className="text-brandRed font-bold bg-red-50 px-4 py-2 rounded-btn">ரத்து செய்</button>}
+                          <button onClick={() => navigate(`/ticket/${b.ticketId?.ticketId || b.ticketId || b._id}`)} className="text-primary font-bold bg-blue-50 px-4 py-2 rounded-btn">டிக்கெட் பார்</button>
+                          {b.bookingStatus !== 'cancelled' && <button onClick={() => handleCancel(b.bookingId)} className="text-brandRed font-bold bg-red-50 px-4 py-2 rounded-btn">ரத்து செய்</button>}
                       </div>
                    </div>
                  )) : (
                    <div className="text-center py-12 glassmorphism rounded-card border border-white/40 text-brandMutedText">
                       <p className="text-lg font-bold">பயணங்கள் ஏதுமில்லை</p>
+                   </div>
+                 )}
+               </div>
+            </div>
+          )}
+
+          {activeTab === 'tickets' && (
+            <div className="slide-in">
+               <h2 className="text-2xl font-bold text-brandDarkText mb-6">சேமித்த டிக்கெட்கள்</h2>
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                 {savedTickets.length > 0 ? savedTickets.map((t) => (
+                   <div key={t._id} className="glassmorphism p-6 rounded-card shadow-sm border border-white/40">
+                      <div className="flex justify-between items-start mb-4">
+                         <div>
+                            <p className="text-xs text-brandMutedText font-bold uppercase">PNR: {t.pnrNumber}</p>
+                            <h3 className="font-bold text-lg">{t.journeyDetails?.sourceName} ➔ {t.journeyDetails?.destinationName}</h3>
+                         </div>
+                         <div className={`px-2 py-1 rounded text-[10px] font-bold ${t.isValid ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>
+                            {t.isValid ? 'உறுதி' : 'செல்லாது'}
+                         </div>
+                      </div>
+                      <p className="text-sm text-brandMutedText font-semibold mb-4">
+                        {new Date(t.journeyDetails?.travelDate).toLocaleDateString('ta-IN')} | {t.journeyDetails?.travelClass}
+                      </p>
+                      <div className="flex space-x-2">
+                         <button onClick={() => navigate(`/ticket/${t.ticketId}`)} className="flex-1 text-primary font-bold bg-blue-50 py-2 rounded-btn text-sm">பார்</button>
+                         <button onClick={() => navigate(`/ticket/${t.ticketId}`)} className="flex-1 text-brandDarkText font-bold bg-gray-100 py-2 rounded-btn text-sm">பதிவிறக்கு</button>
+                      </div>
+                   </div>
+                 )) : (
+                   <div className="col-span-full text-center py-12 glassmorphism rounded-card border border-white/40 text-brandMutedText">
+                      <p className="text-lg font-bold">டிக்கெட்கள் ஏதுமில்லை</p>
                    </div>
                  )}
                </div>

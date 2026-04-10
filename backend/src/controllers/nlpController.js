@@ -8,10 +8,10 @@ const TRAVEL_TYPES = {
 };
 
 const CITY_MAP = {
-  சென்னை: 'MAS', madras: 'MAS', chennai: 'MAS',
-  கோவை: 'CBE', coimbatore: 'CBE', kovai: 'CBE', கோயம்புத்தூர்: 'CBE',
-  மதுரை: 'MDU', madurai: 'MDU',
-  திருச்சி: 'TPJ', trichy: 'TPJ', திருச்சிராப்பள்ளி: 'TPJ',
+  சென்னை: 'MAS', madras: 'MAS', chennai: 'MAS', madras: 'MAS',
+  கோவை: 'CBE', 'கோயமு': 'CBE', 'கோயம்': 'CBE', 'கோயம்பு': 'CBE', coimbatore: 'CBE', kovai: 'CBE', கோயம்புத்தூர்: 'CBE', கோயமுத்தூர்: 'CBE', CBE: 'CBE', coimb: 'CBE',
+  மதுரை: 'MDU', madurai: 'MDU', MDU: 'MDU',
+  திருச்சி: 'TPJ', trichy: 'TPJ', திருச்சிராப்பள்ளி: 'TPJ', TPJ: 'TPJ',
   சேலம்: 'SA', salem: 'SA',
   வேலூர்: 'VLR', vellore: 'VLR',
   திருநெல்வேலி: 'TEN', tirunelveli: 'TEN', நெல்லை: 'TEN',
@@ -76,30 +76,44 @@ const parseTamilInputLegacy = (text) => {
   }
 
   // Basic city detection
-  const foundCities = [];
+  const allMatches = [];
   for (const [name, code] of Object.entries(CITY_MAP)) {
-    if (lower.includes(name.toLowerCase())) {
-      foundCities.push({ name, code, position: lower.indexOf(name.toLowerCase()) });
+    const pos = lower.indexOf(name.toLowerCase());
+    if (pos !== -1) {
+      allMatches.push({ name, code, position: pos });
     }
   }
-  foundCities.sort((a, b) => a.position - b.position);
 
-  if (foundCities.length >= 2) {
-    result.source = foundCities[0].code;
-    result.destination = foundCities[1].code;
-  } else if (foundCities.length === 1) {
+  // Deduplicate matches by code (if same city mentioned multiple ways, keep the first one)
+  const codeTracker = new Set();
+  const uniqueCities = allMatches
+    .sort((a, b) => a.position - b.position)
+    .filter(m => {
+      // Allow the same city if the positions are significantly different (mentioned twice)
+      // Otherwise, deduplicate overlapping or redundant matches for the same location
+      const key = `${m.code}`;
+      if (codeTracker.has(key)) return false;
+      codeTracker.add(key);
+      return true;
+    });
+
+  if (uniqueCities.length >= 2) {
+    result.source = uniqueCities[0].code;
+    result.destination = uniqueCities[1].code;
+  } else if (uniqueCities.length === 1) {
     // Check if it's a destination (ending in 'ku' markers)
-    const pos = foundCities[0].position;
-    const beforeOrAfterCity = lower.substring(pos - 10, pos + 20); // check context around city
+    const pos = uniqueCities[0].position;
+    const beforeOrAfterCity = lower.substring(Math.max(0, pos - 10), Math.min(lower.length, pos + 20));
     const isTo = TO_MARKERS.some(m => beforeOrAfterCity.includes(m));
-    const isFrom = FROM_MARKERS.some(m => beforeOrAfterCity.includes(m));
     
     if (isTo) {
-      result.destination = foundCities[0].code;
+      result.destination = uniqueCities[0].code;
     } else {
-      result.source = foundCities[0].code;
+      result.source = uniqueCities[0].code;
     }
   }
+
+  console.log('Legacy Parser: Found Cities:', uniqueCities.map(c => `${c.name}(${c.code})`));
 
   // Passenger detection (Regex for "N பேர்" or keywords)
   for (const [num, keywords] of Object.entries(TAMIL_NUMBERS)) {
@@ -159,34 +173,49 @@ const parseNLPInput = async (req, res, next) => {
       });
     }
 
-    let parsed = null;
+    let aiParsed = null;
     
-    // Try Gemini first
+    // 1. Try Gemini
     if (process.env.GEMINI_API_KEY) {
       console.log('Attempting AI parsing with Gemini...');
-      parsed = await parseTravelIntent(text);
-      if (parsed) console.log('AI Parsing successful:', parsed);
-      else console.error('AI Parsing failed (returned null)');
-    } else {
-      console.warn('GEMINI_API_KEY is missing in .env');
+      aiParsed = await parseTravelIntent(text);
+      if (aiParsed) console.log('AI Parsing successful');
     }
 
-    // Fallback to legacy if Gemini fails or is not configured
-    if (!parsed || (!parsed.source && !parsed.destination)) {
-      console.log('Falling back to legacy parsing logic...');
-      parsed = parseTamilInputLegacy(text);
+    // 2. Always run Legacy as a base/supplement
+    console.log('Running legacy parsing logic to fill gaps...');
+    const legacyParsed = parseTamilInputLegacy(text);
+
+    // 3. Merge: Start with Legacy, Override with non-null AI results
+    const merged = { ...legacyParsed };
+    
+    if (aiParsed) {
+      if (aiParsed.sourceCode || aiParsed.source) merged.source = aiParsed.sourceCode || aiParsed.source;
+      if (aiParsed.destinationCode || aiParsed.destination) merged.destination = aiParsed.destinationCode || aiParsed.destination;
+      if (aiParsed.travelType) merged.travelType = aiParsed.travelType;
+      if (aiParsed.date) merged.date = aiParsed.date;
+      if (aiParsed.passengers) merged.passengers = aiParsed.passengers;
+      merged.confidence = aiParsed.confidence || 'medium';
+    }
+
+    // 4. Final Validation: Ensure date is YYYY-MM-DD if exists
+    if (merged.date) {
+      const dateObj = new Date(merged.date);
+      if (isNaN(dateObj.getTime()) || merged.date.length < 10) {
+        merged.date = null; // Kill invalid dates to prevent frontend crash
+      }
     }
 
     const suggestions = [];
-    if (!parsed.source) suggestions.push('புறப்படும் இடம் குறிப்பிடவும்');
-    if (!parsed.destination) suggestions.push('செல்லும் இடம் குறிப்பிடவும்');
+    if (!merged.source) suggestions.push('புறப்படும் இடம் குறிப்பிடவும்');
+    if (!merged.destination) suggestions.push('செல்லும் இடம் குறிப்பிடவும்');
 
     res.status(200).json({
       success: true,
-      parsed,
+      parsed: merged,
       suggestions,
-      searchUrl: parsed.source && parsed.destination
-        ? `/api/travel/search?source=${parsed.sourceCode || parsed.source}&destination=${parsed.destinationCode || parsed.destination}${parsed.travelType ? `&type=${parsed.travelType}` : ''}${parsed.date ? `&date=${parsed.date}` : ''}${parsed.passengers ? `&passengers=${parsed.passengers}` : ''}`
+      searchUrl: merged.source && merged.destination
+        ? `/api/travel/search?source=${merged.source}&destination=${merged.destination}${merged.travelType ? `&type=${merged.travelType}` : ''}${merged.date ? `&date=${merged.date}` : ''}${merged.passengers ? `&passengers=${merged.passengers}` : ''}`
         : null,
     });
   } catch (error) {

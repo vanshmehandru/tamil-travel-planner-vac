@@ -8,39 +8,7 @@ const seedExtraData = async () => {
     console.log('Connected to MongoDB...');
 
     const extraOptions = [
-      {
-        type: 'flight',
-        flightNumber: 'AI-439',
-        airline: 'Air India',
-        source: 'MAS',
-        sourceName: 'Chennai International Airport',
-        destination: 'DEL',
-        destinationName: 'Indira Gandhi International Airport',
-        departureTime: '06:15',
-        arrivalTime: '09:05',
-        duration: '2h 50m',
-        pricing: [
-          { class: 'Economy', price: 5800, totalSeats: 120, availableSeats: 45 },
-          { class: 'Business', price: 12500, totalSeats: 12, availableSeats: 4 }
-        ],
-        isActive: true
-      },
-      {
-        type: 'flight',
-        flightNumber: '6E-2134',
-        airline: 'IndiGo',
-        source: 'MAS',
-        sourceName: 'Chennai International Airport',
-        destination: 'DEL',
-        destinationName: 'Indira Gandhi International Airport',
-        departureTime: '18:45',
-        arrivalTime: '21:35',
-        duration: '2h 50m',
-        pricing: [
-          { class: 'Economy', price: 4200, totalSeats: 180, availableSeats: 22 }
-        ],
-        isActive: true
-      },
+
       {
         type: 'train',
         trainNumber: '12615',

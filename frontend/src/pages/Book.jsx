@@ -57,8 +57,28 @@ export function Book() {
     }
 
     for (let i = 0; i < passengers.length; i++) {
-      if (!passengers[i].name || !passengers[i].age) {
+      const p = passengers[i];
+      if (!p.name || !p.age) {
         alert(`பயணி ${i + 1}-ன் பெயர் மற்றும் வயதை நிரப்பவும்.`);
+        return;
+      }
+      if (parseInt(p.age) > 122) {
+        alert(`பயணி ${i + 1}-ன் வயது 122-க்கு மேல் இருக்கக்கூடாது.`);
+        return;
+      }
+      
+      // ID Validation
+      const cleanId = p.idNumber.replace(/\s/g, '');
+      if (p.idType === 'ஆதார்' && !/^\d{12}$/.test(cleanId)) {
+        alert(`பயணி ${i + 1}-க்கு சரியான 12 இலக்க ஆதார் எண்ணை உள்ளிடவும்.`);
+        return;
+      }
+      if (p.idType === 'நிரந்தரக் கணக்கு எண்' && !/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(p.idNumber.toUpperCase())) {
+        alert(`பயணி ${i + 1}-க்கு சரியான 10 இலக்க நிரந்தரக் கணக்கு எண் (PAN) உள்ளிடவும்.`);
+        return;
+      }
+      if (p.idType === 'கடவுச்சீட்டு' && !/^[A-Z0-9]{8}$/.test(p.idNumber.toUpperCase())) {
+        alert(`பயணி ${i + 1}-க்கு சரியான 8 இலக்க கடவுச்சீட்டு (Passport) எண்ணை உள்ளிடவும்.`);
         return;
       }
     }
@@ -73,7 +93,7 @@ export function Book() {
           name: p.name.trim(),
           age: parseInt(p.age),
           gender: p.gender === 'ஆண்' ? 'male' : p.gender === 'பெண்' ? 'female' : 'other',
-          idType: p.idType === 'ஆதார்' ? 'aadhaar' : p.idType === 'PAN' ? 'pan' : 'voter_id',
+          idType: p.idType === 'ஆதார்' ? 'aadhaar' : p.idType === 'நிரந்தரக் கணக்கு எண்' ? 'pan' : p.idType === 'கடவுச்சீட்டு' ? 'passport' : 'voter_id',
           idNumber: p.idNumber
         })),
         foodPreference: foodPreference === 'சைவம்' ? 'veg' : foodPreference === 'அசைவம்' ? 'non-veg' : 'no_food',
@@ -156,7 +176,7 @@ export function Book() {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-brandMutedText text-sm mb-1 font-semibold">வயது</label>
-                      <input type="number" value={p.age} onChange={(e) => handlePassengerChange(idx, 'age', e.target.value)} className="input-field" placeholder="வயது"/>
+                      <input type="number" value={p.age} onChange={(e) => handlePassengerChange(idx, 'age', e.target.value)} min="1" max="122" className="input-field" placeholder="வயது"/>
                     </div>
                     <div>
                       <label className="block text-brandMutedText text-sm mb-1 font-semibold">பாலினம்</label>
@@ -171,7 +191,10 @@ export function Book() {
                   <div>
                     <label className="block text-brandMutedText text-sm mb-1 font-semibold">அடையாள அட்டை</label>
                     <select value={p.idType} onChange={(e) => handlePassengerChange(idx, 'idType', e.target.value)} className="input-field">
-                      <option>ஆதார்</option><option>PAN</option><option>வாக்காளர் அட்டை</option>
+                      <option>ஆதார்</option>
+                      <option>நிரந்தரக் கணக்கு எண்</option>
+                      <option>கடவுச்சீட்டு</option>
+                      <option>வாக்காளர் அட்டை</option>
                     </select>
                   </div>
                   <div>

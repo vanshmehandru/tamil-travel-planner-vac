@@ -26,6 +26,7 @@ const userSchema = new mongoose.Schema(
     },
     age: {
       type: Number,
+      max: [122, 'வயது 122-க்கு மேல் இருக்கக்கூடாது'], // Age cannot be more than 122
     },
     gender: {
       type: String,

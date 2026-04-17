@@ -283,9 +283,9 @@ export function Account() {
                  <div>
                     <label className="font-bold block mb-2">எழுத்து அளவு</label>
                     <div className="flex space-x-4">
-                       <button onClick={() => document.documentElement.style.setProperty('--base-font-size', '16px')} className="flex-1 py-2 border rounded font-bold hover:bg-gray-50">A</button>
-                       <button onClick={() => document.documentElement.style.setProperty('--base-font-size', '18px')} className="flex-1 py-2 border rounded font-bold text-lg hover:bg-gray-50">A+</button>
-                       <button onClick={() => document.documentElement.style.setProperty('--base-font-size', '20px')} className="flex-1 py-2 border rounded font-bold text-xl hover:bg-gray-50">A++</button>
+                       <button onClick={() => document.documentElement.style.setProperty('--base-font-size', '16px')} className="flex-1 py-2 border rounded font-bold hover:bg-gray-50">அ</button>
+                       <button onClick={() => document.documentElement.style.setProperty('--base-font-size', '18px')} className="flex-1 py-2 border rounded font-bold text-lg hover:bg-gray-50">அ+</button>
+                       <button onClick={() => document.documentElement.style.setProperty('--base-font-size', '20px')} className="flex-1 py-2 border rounded font-bold text-xl hover:bg-gray-50">அ++</button>
                     </div>
                  </div>
               </div>

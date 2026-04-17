@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const passengerSchema = new mongoose.Schema({
   name: { type: String, required: true, trim: true },
-  age: { type: Number, required: true, min: 1, max: 120 },
+  age: { type: Number, required: true, min: 1, max: 122 },
   gender: {
     type: String,
     required: true,
@@ -13,7 +13,28 @@ const passengerSchema = new mongoose.Schema({
     enum: ['aadhaar', 'pan', 'passport', 'voter_id', 'driving_license'],
     default: 'aadhaar',
   },
-  idNumber: { type: String },
+  idNumber: { 
+    type: String,
+    required: true,
+    validate: {
+      validator: function(v) {
+        if (this.idType === 'aadhaar') {
+          // Aadhaar: 12 digits (after stripping spaces if any)
+          return /^\d{12}$/.test(v.replace(/\s/g, ''));
+        }
+        if (this.idType === 'pan') {
+          // PAN: 10 chars (alphanumeric)
+          return /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(v.toUpperCase());
+        }
+        if (this.idType === 'passport') {
+          // Passport: 8 chars (typically 1 letter + 7 digits for Indian passports)
+          return /^[A-Z0-9]{8}$/.test(v.toUpperCase());
+        }
+        return true; // Default for others like voter_id
+      },
+      message: props => `${props.value} என்பது சரியான அடையாள எண் அல்ல.` // Not a valid ID number
+    }
+  },
   seatNumber: { type: String },
   seatPreference: {
     type: String,
@@ -36,8 +57,7 @@ const bookingSchema = new mongoose.Schema(
       required: true,
     },
     travelOptionId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'TravelOption',
+      type: String,
       required: true,
     },
     travelType: {

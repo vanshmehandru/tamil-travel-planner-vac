@@ -21,6 +21,7 @@ const CITY_MAP = {
   புதுச்சேரி: 'PDY', pondicherry: 'PDY', பாண்டிச்சேரி: 'PDY',
   ஓட்டி: 'UAM', ooty: 'UAM', உதகமண்டலம்: 'UAM',
   பெங்களூர்: 'SBC', bangalore: 'SBC', பெங்களூரு: 'SBC',
+  டெல்லி: 'DLI', delhi: 'DLI', 'old delhi': 'DLI', DLI: 'DLI', DEL: 'DLI', 'டிெல்லி': 'DLI',
 };
 const DATE_KEYWORDS = {
   today: ['இன்று', 'today', 'now', 'இன்னைக்கு'],
@@ -192,8 +193,8 @@ const parseNLPInput = async (req, res, next) => {
     if (aiParsed) {
       if (aiParsed.sourceCode || aiParsed.source) merged.source = aiParsed.sourceCode || aiParsed.source;
       if (aiParsed.destinationCode || aiParsed.destination) merged.destination = aiParsed.destinationCode || aiParsed.destination;
-      if (aiParsed.travelType) merged.travelType = aiParsed.travelType;
-      if (aiParsed.date) merged.date = aiParsed.date;
+      if (aiParsed.travelType || aiParsed.type) merged.travelType = aiParsed.travelType || aiParsed.type;
+      if (aiParsed.date || aiParsed.travelDate) merged.date = aiParsed.date || aiParsed.travelDate;
       if (aiParsed.passengers) merged.passengers = aiParsed.passengers;
       merged.confidence = aiParsed.confidence || 'medium';
     }

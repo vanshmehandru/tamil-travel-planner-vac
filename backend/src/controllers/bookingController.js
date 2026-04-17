@@ -19,12 +19,35 @@ const createBooking = async (req, res, next) => {
     } = req.body;
 
     // 1. Validate travel option exists
-    const travelOption = await TravelOption.findById(travelOptionId);
-    if (!travelOption) {
-      return res.status(404).json({
-        success: false,
-        message: 'பயண விவரம் கிடைக்கவில்லை', // Travel option not found
-      });
+    let travelOption;
+    const isExternal = travelOptionId && travelOptionId.startsWith('ext-');
+
+    if (isExternal) {
+      // For external IDs, we normally fetch from API or use a snapshot.
+      // For this demo, we'll construct a valid enough object to satisfy the booking logic.
+      travelOption = {
+        _id: travelOptionId,
+        type: travelOptionId.includes('flight') ? 'flight' : 'train',
+        source: req.body.source || 'MAS',
+        sourceName: req.body.sourceName || 'Chennai',
+        destination: req.body.destination || 'DEL',
+        destinationName: req.body.destinationName || 'Delhi',
+        departureTime: req.body.departureTime || '10:00',
+        arrivalTime: req.body.arrivalTime || '22:00',
+        duration: req.body.duration || '12h 0m',
+        luggageAllowance: 15,
+        pricing: [
+          { class: travelClass, price: 4500, availableSeats: 99 }
+        ]
+      };
+    } else {
+      travelOption = await TravelOption.findById(travelOptionId);
+      if (!travelOption) {
+        return res.status(404).json({
+          success: false,
+          message: 'பயண விவரம் கிடைக்கவில்லை', // Travel option not found
+        });
+      }
     }
 
     // 2. Find the requested class pricing
@@ -89,11 +112,13 @@ const createBooking = async (req, res, next) => {
       bookingStatus: 'confirmed',
     });
 
-    // 7. Decrement available seats
-    await TravelOption.updateOne(
-      { _id: travelOptionId, 'pricing.class': travelClass },
-      { $inc: { 'pricing.$.availableSeats': -passengerCount } }
-    );
+    // 7. Decrement available seats (skip for external)
+    if (!isExternal) {
+      await TravelOption.updateOne(
+        { _id: travelOptionId, 'pricing.class': travelClass },
+        { $inc: { 'pricing.$.availableSeats': -passengerCount } }
+      );
+    }
 
     // 8. Generate ticket
     const ticket = await ticketService.generateTicket(booking, travelOption);
@@ -210,11 +235,13 @@ const cancelBooking = async (req, res, next) => {
     booking.paymentStatus = 'refunded';
     await booking.save();
 
-    // Restore seats
-    await TravelOption.updateOne(
-      { _id: booking.travelOptionId, 'pricing.class': booking.travelClass },
-      { $inc: { 'pricing.$.availableSeats': booking.totalPassengers } }
-    );
+    // Restore seats (skip for external)
+    if (booking.travelOptionId && !booking.travelOptionId.startsWith('ext-')) {
+      await TravelOption.updateOne(
+        { _id: booking.travelOptionId, 'pricing.class': booking.travelClass },
+        { $inc: { 'pricing.$.availableSeats': booking.totalPassengers } }
+      );
+    }
 
     // Invalidate ticket
     if (booking.ticketId) {

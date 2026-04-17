@@ -75,7 +75,7 @@ export function Login() {
               <div className="flex space-x-4">
                 <div className="flex-1">
                   <label className="block text-brandDarkText mb-1 font-semibold">வயது</label>
-                  <input type="number" name="age" value={formData.age} onChange={handleChange} required className="input-field" />
+                  <input type="number" name="age" value={formData.age} onChange={handleChange} required min="1" max="122" className="input-field" />
                 </div>
                 <div className="flex-1">
                   <label className="block text-brandDarkText mb-1 font-semibold">பாலினம்</label>

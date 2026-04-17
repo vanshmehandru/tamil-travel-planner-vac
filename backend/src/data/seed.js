@@ -98,6 +98,90 @@ const travelOptions = [
   {
     type: 'bus',
     busNumber: 'TN01-AV-1122',
+    busName: 'எஸ்.ஆர்.எம் டிராவல்ஸ் (SRM Travels)',
+    source: 'MAS', sourceName: 'சென்னை',
+    destination: 'CBE', destinationName: 'கோவை',
+    departureTime: '21:30', arrivalTime: '06:15',
+    duration: '8h 45m', durationMinutes: 525,
+    days: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    pricing: [
+      { class: 'AC Sleeper', price: 1150, totalSeats: 30, availableSeats: 12 },
+    ],
+    foodService: { available: false },
+    luggageAllowance: 20,
+  },
+
+  // ===========================================================================
+  // CHENNAI (MAS) ⇄ DELHI (DEL)
+  // ===========================================================================
+  {
+    type: 'bus',
+    busNumber: 'KA01-DX-9988',
+    busName: 'நேஷனல் டிராவல்ஸ் (National Travels)',
+    source: 'MAS', sourceName: 'சென்னை',
+    destination: 'DEL', destinationName: 'டெல்லி',
+    departureTime: '10:00', arrivalTime: '22:00', // Multi-day journey mock
+    duration: '36h 0m', durationMinutes: 2160,
+    days: ['Wed', 'Sat'],
+    pricing: [
+      { class: 'Luxury Multi-Axle', price: 3500, totalSeats: 40, availableSeats: 15 },
+    ],
+    foodService: { available: true, vegOption: true },
+    luggageAllowance: 30,
+  },
+  {
+    type: 'bus',
+    busNumber: 'DL01-EX-1122',
+    busName: 'கே.பி.என் எக்ஸ்பிரஸ் (KPN Express)',
+    source: 'DEL', sourceName: 'டெல்லி',
+    destination: 'MAS', destinationName: 'சென்னை',
+    departureTime: '14:00', arrivalTime: '02:00', 
+    duration: '36h 0m', durationMinutes: 2160,
+    days: ['Mon', 'Thu'],
+    pricing: [
+      { class: 'Luxury Multi-Axle', price: 3450, totalSeats: 40, availableSeats: 10 },
+    ],
+    foodService: { available: true, vegOption: true },
+    luggageAllowance: 30,
+  },
+
+  // ===========================================================================
+  // COIMBATORE (CBE) ⇄ DELHI (DEL/NDLS)
+  // ===========================================================================
+  {
+    type: 'train',
+    trainNumber: '12643',
+    trainName: 'நிஜாமுதீன் எக்ஸ்பிரஸ் (Nizamuddin Exp)',
+    source: 'CBE', sourceName: 'கோவை',
+    destination: 'NDLS', destinationName: 'புது டெல்லி',
+    departureTime: '23:05', arrivalTime: '18:45',
+    duration: '43h 40m', durationMinutes: 2620,
+    days: ['Tue'],
+    pricing: [
+      { class: 'SL', price: 950, totalSeats: 72, availableSeats: 15 },
+      { class: '3A', price: 2500, totalSeats: 64, availableSeats: 8 },
+    ],
+    foodService: { available: true, vegOption: true },
+    luggageAllowance: 40,
+  },
+
+  {
+    type: 'bus',
+    busNumber: 'TN38-CX-1234',
+    busName: 'எஸ்.ஆர்.எஸ் டிராவல்ஸ் (SRS Travels)',
+    source: 'CBE', sourceName: 'கோவை',
+    destination: 'DEL', destinationName: 'டெல்லி',
+    departureTime: '06:00', arrivalTime: '21:00', 
+    duration: '39h 0m', durationMinutes: 2340,
+    days: ['Fri'],
+    pricing: [
+      { class: 'AC Sleeper', price: 3800, totalSeats: 30, availableSeats: 5 },
+    ],
+    foodService: { available: true, vegOption: true },
+    luggageAllowance: 30,
+  },
+  {
+    type: 'bus',
     busOperator: 'TNSTC (அரசு பஸ்)',
     busType: 'super_express',
     source: 'MAS', sourceName: 'சென்னை',

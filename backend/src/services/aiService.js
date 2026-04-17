@@ -15,36 +15,31 @@ const parseTravelIntent = async (text) => {
   }
 
   const prompt = `
-    You are a travel assistant for "Namma Yatri", a travel booking platform for Tamil Nadu, India.
-    Your task is to extract travel intent from the following user input (which may be in Tamil, English, or Tanglish).
+    You are an expert Tamil Travel Assistant for "Namma Yatri". Your task is to parse travel requests and return ONLY valid JSON.
     
     USER INPUT: "${text}"
-    
-    CRITICAL TAMIL GRAMMAR RULES:
-    - Words ending in "-இருந்து" (-irundhu) or "-லிருந்து" (-lirundhu) are the SOURCE (e.g., "சென்னையிலிருந்து" = From Chennai).
-    - Words ending in "-க்கு" (-ku) or "-நோக்கி" (-nokki) are the DESTINATION (e.g., "மதுரைக்கு" = To Madurai).
-    - If no markers are present and only one city is mentioned, assume it is the DESTINATION.
-    
-    TAMIL DATE EXAMPLES:
-    - "10 மே" -> Month 05, Day 10.
-    - "ஜனவரி 25" -> Month 01, Day 25.
-    
-    EXTRACT the following fields in JSON format:
-    - source: (String) Departure city. List: [Chennai, Coimbatore, Madurai, Trichy, Salem, Vellore, Erode, Ooty, Bangalore].
-    - sourceCode: (String) REQUIRED code from: [MAS, CBE, MDU, TPJ, SA, VLR, ED, UAM, SBC].
-    - destination: (String) Arrival city.
-    - destinationCode: (String) REQUIRED code.
+    REFERENCE DATE (Today): ${new Date().toISOString().split('T')[0]}
+
+    FIELDS TO EXTRACT:
+    - source: (String) E.g., Chennai, Madurai, Delhi.
+    - sourceCode: (String) IATA/Station Code. [MAS, CBE, MDU, TPJ, SA, VLR, ED, UAM, SBC, DLI, MSB].
+    - destination: (String) E.g., Delhi, Old Delhi, Coimbatore.
+    - destinationCode: (String) REQUIRED code. Use "DLI" for Delhi/Old Delhi.
     - travelType: (String) "train", "bus", or "flight".
     - date: (String) YYYY-MM-DD. 
-      * Parse: "10 மே", "tomorrow" (நாளை), "next week" (அடுத்த வாரம்). 
-      * Reference today: ${new Date().toISOString().split('T')[0]}.
-    - passengers: (Number) Integer.
+    - passengers: (Number) Default 1.
     - confidence: "high", "medium", or "low".
+
+    SPECIAL GRAMMAR RULES FOR TAMIL:
+    - "-இருந்து" or "-லிருந்து" (irundhu) -> SOURCE (e.g., சென்னயிலிருந்து = From Chennai).
+    - "-க்கு" or "-நோக்கி" (ku) -> DESTINATION (e.g., மதுரைக்கு = To Madurai).
+    - Keywords for travelType: "ரயில்"/"ட்ரைன்" = train, "பஸ்"/"பேருந்து" = bus, "விமானம்"/"பறக்கும்" = flight.
     
-    If name ends in "-இருந்து" or "-லிருந்து" it is SOURCE.
-    If name ends in "-க்கு" it is DESTINATION.
+    IMPORTANT: Handle "Delhi" (டெல்லி) accurately based on its suffix. 
+    - "டெல்லியிலிருந்து" (From Delhi) -> sourceCode: "DLI".
+    - "டெல்லிக்கு" (To Delhi) -> destinationCode: "DLI".
     
-    Return ONLY VALID JSON.
+    Return ONLY JSON.
   `;
 
   try {

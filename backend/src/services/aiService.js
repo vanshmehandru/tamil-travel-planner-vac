@@ -2,9 +2,9 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// Default model - forcing v1 API which is more stable
-let currentModelName = "gemini-1.5-flash"; 
-let model = genAI.getGenerativeModel({ model: currentModelName }, { apiVersion: 'v1' });
+// Default model - Using gemini-2.5-flash which is available for this key
+let currentModelName = "gemini-2.5-flash"; 
+let model = genAI.getGenerativeModel({ model: currentModelName });
 
 // --- CACHE & COOLDOWN STATE ---
 const aiCache = new Map();
@@ -28,68 +28,6 @@ const CODE_TO_NAME_TAMIL = {
   'BOM': 'मुंबई (மும்பை)', 'HYB': 'ஹைதராபாத்', 'HYD': 'ஹைதராபாத்',
   'HWH': 'கொல்கத்தா', 'CCU': 'கொல்கத்தா',
   'PDY': 'புதுச்சேரி'
-};
-
-/**
- * Checks if we are currently in a cooldown period due to 429 errors
- */
-const isUnderCooldown = () => {
-  if (!quotaCooldownUntil) return false;
-  if (Date.now() > quotaCooldownUntil) {
-    quotaCooldownUntil = null;
-    return false;
-  }
-  return true;
-};
-
-/**
- * Generates high-quality fallback (demo) data when AI is unavailable
- */
-const generateDemoData = (type, source, destination, date) => {
-  const operators = {
-    flight: ['IndiGo', 'Air India', 'SpiceJet', 'Vistara', 'Akasa Air'],
-    train: ['Vande Bharat', 'Shatabdi Express', 'Duronto Express', 'Pandyan Express', 'Nellai Express', 'Cheran Express', 'Kovai Express'],
-    bus: ['Zingbus Plus', 'IntrCity SmartBus', 'Parveen Travels', 'KPN Travels', 'SRS Travels']
-  };
-
-  const getTransportNum = (type) => {
-    if (type === 'flight') return `6E-${Math.floor(100 + Math.random() * 900)}`;
-    if (type === 'train') return `${Math.floor(12100 + Math.random() * 900)}`;
-    return `TN-${Math.floor(10 + Math.random() * 89)}-AB-${Math.floor(1000 + Math.random() * 8999)}`;
-  };
-
-  const sName = CODE_TO_NAME_TAMIL[source] || source;
-  const dName = CODE_TO_NAME_TAMIL[destination] || destination;
-
-  const results = [];
-  const count = 4 + Math.floor(Math.random() * 3);
-  
-  for (let i = 0; i < count; i++) {
-    const op = operators[type][Math.floor(Math.random() * operators[type].length)];
-    const depH = 5 + Math.floor(Math.random() * 15);
-    const durationH = type === 'flight' ? 1 : (type === 'train' ? 6 : 8);
-    
-    results.push({
-      _id: `demo-${type}-${Date.now()}-${i}`,
-      type: type,
-      [type === 'flight' ? 'airline' : (type === 'train' ? 'trainName' : 'busOperator')]: op,
-      [type === 'flight' ? 'flightNumber' : (type === 'train' ? 'trainNumber' : 'busNumber')]: getTransportNum(type),
-      source: source,
-      destination: destination,
-      sourceName: sName,
-      destinationName: dName,
-      departureTime: `${depH.toString().padStart(2, '0')}:30`,
-      arrivalTime: `${(depH + durationH) % 24}:45`,
-      duration: `${durationH}h 15m`,
-      pricing: [
-        { class: type === 'flight' ? 'Economy' : (type === 'train' ? '3A' : 'Sleeper'), price: type === 'flight' ? 4500 : (type === 'train' ? 1200 : 850), totalSeats: 60, availableSeats: 15 }
-      ],
-      isActive: true,
-      isRealTime: true,
-      isDemoData: true 
-    });
-  }
-  return results;
 };
 
 /**
@@ -184,8 +122,8 @@ const generateTravelDataAI = async (type, source, destination, date) => {
   logToDebug(`START AI Gen: ${type} | ${source} -> ${destination} on ${date}`);
   
   if (!process.env.GEMINI_API_KEY) {
-    logToDebug('MISSING GEMINI_API_KEY - Falling back to demo data');
-    return generateDemoData(type, source, destination, date);
+    logToDebug('MISSING GEMINI_API_KEY');
+    return [];
   }
 
   // Map type to specific operator key name
@@ -267,8 +205,8 @@ const generateTravelDataAI = async (type, source, destination, date) => {
         return validated;
       }
 
-      logToDebug(`AI returned 0 results for ${type}. Falling back to demo data.`);
-      return generateDemoData(type, source, destination, date);
+      logToDebug(`AI returned 0 results for ${type}.`);
+      return [];
     } catch (error) {
       const is429 = error.message.includes('429') || (error.response && error.response.status === 429);
       const isTransient = error.message.includes('503') || error.message.includes('504') || error.message.includes('Timeout');
@@ -276,7 +214,7 @@ const generateTravelDataAI = async (type, source, destination, date) => {
       if (is429) {
         logToDebug(`QUOTA EXCEEDED (429): Entering cooldown for 60s.`);
         quotaCooldownUntil = Date.now() + 60000;
-        return generateDemoData(type, source, destination, date);
+        return [];
       }
 
       if (isTransient && attempt < MAX_RETRIES) {
@@ -285,8 +223,8 @@ const generateTravelDataAI = async (type, source, destination, date) => {
         continue;
       }
       
-      logToDebug(`ERROR AI final fail: ${type} -> ${error.message}. Falling back to demo data.`);
-      return generateDemoData(type, source, destination, date);
+      logToDebug(`ERROR AI final fail: ${type} -> ${error.message}.`);
+      return [];
     }
   }
 };

@@ -125,3 +125,90 @@ Please retry in 41.284154655s. [{"@type":"type.googleapis.com/google.rpc.Help","
 [2026-04-18T06:30:40.189Z] ERROR AI final fail: train -> [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent: [404 Not Found] models/gemini-1.5-flash is not found for API version v1, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.. Falling back to demo data.
 [2026-04-18T06:30:40.327Z] START AI Gen: train | HYB -> MAS on 2026-04-25
 [2026-04-18T06:30:40.430Z] ERROR AI final fail: train -> [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent: [404 Not Found] models/gemini-1.5-flash is not found for API version v1, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.. Falling back to demo data.
+[2026-04-18T06:38:42.417Z] START AI Gen: flight | BLR -> MAA on 2026-04-25
+[2026-04-18T06:38:43.481Z] ERROR AI final fail: flight -> [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent: [404 Not Found] models/gemini-1.5-flash is not found for API version v1, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods..
+[2026-04-18T06:38:43.547Z] START AI Gen: flight | BLR -> MAA on 2026-04-25
+[2026-04-18T06:38:43.651Z] ERROR AI final fail: flight -> [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent: [404 Not Found] models/gemini-1.5-flash is not found for API version v1, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods..
+[2026-04-18T06:38:50.417Z] START AI Gen: bus | BLR -> MAS on 2026-04-25
+[2026-04-18T06:38:50.772Z] ERROR AI final fail: bus -> [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent: [404 Not Found] models/gemini-1.5-flash is not found for API version v1, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods..
+[2026-04-18T06:38:51.463Z] START AI Gen: train | SBC -> MAS on 2026-04-25
+[2026-04-18T06:38:51.978Z] ERROR AI final fail: train -> [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent: [404 Not Found] models/gemini-1.5-flash is not found for API version v1, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods..
+[2026-04-18T06:38:52.521Z] START AI Gen: flight | BLR -> MAA on 2026-04-25
+[2026-04-18T06:38:52.523Z] START AI Gen: train | SBC -> MAS on 2026-04-25
+[2026-04-18T06:38:52.524Z] START AI Gen: bus | BLR -> MAS on 2026-04-25
+[2026-04-18T06:38:52.626Z] ERROR AI final fail: flight -> [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent: [404 Not Found] models/gemini-1.5-flash is not found for API version v1, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods..
+[2026-04-18T06:38:52.687Z] ERROR AI final fail: train -> [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent: [404 Not Found] models/gemini-1.5-flash is not found for API version v1, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods..
+[2026-04-18T06:38:52.881Z] ERROR AI final fail: bus -> [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent: [404 Not Found] models/gemini-1.5-flash is not found for API version v1, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods..
+[2026-04-18T06:45:30.768Z] START AI Gen: flight | HYD -> MAA on 2026-04-25
+[2026-04-18T06:45:30.773Z] START AI Gen: train | HYB -> MAS on 2026-04-25
+[2026-04-18T06:45:30.776Z] START AI Gen: bus | HYB -> MAS on 2026-04-25
+[2026-04-18T06:45:31.414Z] ERROR AI final fail: flight -> [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent: [404 Not Found] models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods..
+[2026-04-18T06:45:31.537Z] ERROR AI final fail: bus -> [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent: [400 Bad Request] API key expired. Please renew the API key. [{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","domain":"googleapis.com","metadata":{"service":"generativelanguage.googleapis.com"}},{"@type":"type.googleapis.com/google.rpc.LocalizedMessage","locale":"en-US","message":"API key expired. Please renew the API key."}].
+[2026-04-18T06:45:31.569Z] ERROR AI final fail: train -> [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent: [404 Not Found] models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods..
+[2026-04-18T06:45:31.644Z] START AI Gen: flight | HYD -> MAA on 2026-04-25
+[2026-04-18T06:45:31.647Z] START AI Gen: train | HYB -> MAS on 2026-04-25
+[2026-04-18T06:45:31.648Z] START AI Gen: bus | HYB -> MAS on 2026-04-25
+[2026-04-18T06:45:31.750Z] ERROR AI final fail: flight -> [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent: [404 Not Found] models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods..
+[2026-04-18T06:45:31.761Z] ERROR AI final fail: train -> [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent: [404 Not Found] models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods..
+[2026-04-18T06:45:31.806Z] ERROR AI final fail: bus -> [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent: [404 Not Found] models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods..
+[2026-04-18T06:48:47.941Z] START AI Gen: flight | MAA -> DEL on 2026-04-25
+[2026-04-18T06:48:59.294Z] SUCCESS AI Gen: 7 flight items.
+[2026-04-18T06:48:59.359Z] CACHE HIT: flight-MAA-DEL-2026-04-25
+[2026-04-18T06:51:55.301Z] START AI Gen: train | MAS -> DLI on 2026-04-25
+[2026-04-18T06:52:20.326Z] Transient error (Gemini API Timeout), retrying... (1/2)
+[2026-04-18T06:52:47.352Z] Transient error (Gemini API Timeout), retrying... (2/2)
+[2026-04-18T06:53:16.373Z] ERROR AI final fail: train -> Gemini API Timeout.
+[2026-04-18T06:55:37.245Z] START AI Gen: train | MAS -> DLI on 2026-04-25
+[2026-04-18T06:55:57.265Z] START AI Gen: train | MAS -> DLI on 2026-04-25
+[2026-04-18T06:55:59.196Z] SUCCESS AI Gen: 6 train items.
+[2026-04-18T06:56:20.008Z] CACHE HIT: flight-MAA-DEL-2026-04-25
+[2026-04-18T06:56:22.270Z] Transient error (Gemini API Timeout), retrying... (1/2)
+[2026-04-18T06:56:49.293Z] Transient error (Gemini API Timeout), retrying... (2/2)
+[2026-04-18T16:53:18.734Z] START AI Gen: train | HYB -> DLI on 2026-04-25
+[2026-04-18T16:53:38.736Z] START AI Gen: train | HYB -> DLI on 2026-04-25
+[2026-04-18T16:53:43.751Z] Transient error (Gemini API Timeout), retrying... (1/2)
+[2026-04-18T16:54:03.750Z] Transient error (Gemini API Timeout), retrying... (1/2)
+[2026-04-18T16:54:10.767Z] Transient error (Gemini API Timeout), retrying... (2/2)
+[2026-04-18T16:54:29.708Z] SUCCESS AI Gen: 7 train items.
+[2026-04-18T16:54:39.781Z] ERROR AI final fail: train -> Gemini API Timeout.
+[2026-04-18T16:54:44.228Z] START AI Gen: flight | HYD -> DEL on 2026-04-25
+[2026-04-18T16:54:44.233Z] CACHE HIT: train-HYB-DLI-2026-04-25
+[2026-04-18T16:54:44.236Z] START AI Gen: bus | HYB -> DEL on 2026-04-25
+[2026-04-18T16:54:45.147Z] CACHE HIT: train-HYB-DLI-2026-04-25
+[2026-04-18T16:54:58.235Z] SUCCESS AI Gen: 7 flight items.
+[2026-04-18T16:54:59.667Z] SUCCESS AI Gen: 6 bus items.
+[2026-04-18T16:55:23.928Z] START AI Gen: train | MAS -> இந்தூர் on 2026-04-25
+[2026-04-18T16:55:43.909Z] START AI Gen: train | MAS -> இந்தூர் on 2026-04-25
+[2026-04-18T16:55:48.139Z] SUCCESS AI Gen: 7 train items.
+[2026-04-18T16:56:06.332Z] SUCCESS AI Gen: 5 train items.
+[2026-04-18T16:56:56.811Z] START AI Gen: train | MAS -> போபால் on 2026-04-25
+[2026-04-18T16:57:16.812Z] START AI Gen: train | MAS -> போபால் on 2026-04-25
+[2026-04-18T16:57:21.837Z] Transient error (Gemini API Timeout), retrying... (1/2)
+[2026-04-18T16:57:38.643Z] SUCCESS AI Gen: 7 train items.
+[2026-04-18T16:57:48.893Z] Transient error (Gemini API Timeout), retrying... (2/2)
+[2026-04-18T16:58:17.911Z] ERROR AI final fail: train -> Gemini API Timeout.
+[2026-04-18T16:58:22.855Z] START AI Gen: bus | MAS -> போபால் on 2026-04-25
+[2026-04-18T16:58:23.608Z] CACHE HIT: train-MAS-போபால்-2026-04-25
+[2026-04-18T16:58:37.603Z] SUCCESS AI Gen: 6 bus items.
+[2026-04-18T16:58:47.476Z] CACHE HIT: bus-MAS-போபால்-2026-04-25
+[2026-04-18T16:58:51.347Z] START AI Gen: flight | MAA -> போபால் on 2026-04-25
+[2026-04-18T16:59:07.776Z] SUCCESS AI Gen: 7 flight items.
+[2026-04-18T16:59:43.623Z] CACHE HIT: train-MAS-போபால்-2026-04-25
+[2026-04-18T17:00:27.057Z] CACHE HIT: train-MAS-போபால்-2026-04-25
+[2026-04-18T17:00:27.087Z] CACHE HIT: train-MAS-போபால்-2026-04-25
+[2026-04-18T17:00:38.990Z] CACHE HIT: train-MAS-போபால்-2026-04-25
+[2026-04-18T17:00:39.015Z] CACHE HIT: train-MAS-போபால்-2026-04-25
+[2026-04-18T17:00:55.318Z] CACHE HIT: train-MAS-போபால்-2026-04-25
+[2026-04-18T17:00:55.338Z] CACHE HIT: train-MAS-போபால்-2026-04-25
+[2026-04-18T17:01:33.931Z] CACHE HIT: train-MAS-போபால்-2026-04-25
+[2026-04-18T17:01:34.001Z] CACHE HIT: train-MAS-போபால்-2026-04-25
+[2026-04-18T17:03:53.627Z] START AI Gen: train | HYB -> MAS on 2026-04-21
+[2026-04-18T17:04:13.631Z] START AI Gen: train | HYB -> MAS on 2026-04-21
+[2026-04-18T17:04:18.645Z] Transient error (Gemini API Timeout), retrying... (1/2)
+[2026-04-18T17:04:38.647Z] Transient error (Gemini API Timeout), retrying... (1/2)
+[2026-04-18T17:04:44.620Z] SUCCESS AI Gen: 6 train items.
+[2026-04-18T17:05:05.669Z] Transient error (Gemini API Timeout), retrying... (2/2)
+[2026-04-18T17:05:34.725Z] ERROR AI final fail: train -> Gemini API Timeout.
+[2026-04-18T17:05:39.784Z] START AI Gen: bus | HYB -> MAS on 2026-04-21
+[2026-04-18T17:05:40.313Z] CACHE HIT: train-HYB-MAS-2026-04-21
+[2026-04-18T17:05:56.870Z] SUCCESS AI Gen: 7 bus items.

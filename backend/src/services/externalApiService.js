@@ -69,68 +69,17 @@ const searchFlights = async (source, destination, date) => {
 };
 
 /**
- * Search trains using a multi-stage fallback strategy
- * Order: Gemini AI -> RailRadar API -> Demo Data Fallback
+ * Search trains using Gemini AI only
  */
 const searchTrains = async (source, destination, date) => {
   const travelDate = date || new Date().toISOString().split('T')[0];
   
   try {
-    // Stage 1: Try Gemini AI first (as requested)
-    console.log(`[Stage 1] Trying Gemini AI for trains: ${source} -> ${destination}`);
-    const aiResults = await generateTravelDataAI('train', source, destination, travelDate);
-    
-    // Check if results are "real" (not demo data automatically returned by aiService)
-    if (aiResults && aiResults.length > 0 && !aiResults[0].isDemoData) {
-      console.log(`[Stage 1] SUCCESS: Gemini returned ${aiResults.length} real train options.`);
-      return aiResults;
-    }
-
-    // Stage 2: Gemini failed or returned demo data - Try RailRadar
-    console.log(`[Stage 2] Gemini failed/no real results. Trying RailRadar API...`);
-    
-    if (process.env.RAILRADAR_API_KEY) {
-      const response = await axios.get(`${RAILRADAR_URL}/trains/between-stations`, {
-        params: { from: source, to: destination, date: travelDate },
-        headers: { 'x-api-key': process.env.RAILRADAR_API_KEY },
-        timeout: 10000
-      });
-
-      if (response.data && response.data.trains && response.data.trains.length > 0) {
-        console.log(`[Stage 2] SUCCESS: RailRadar returned ${response.data.trains.length} trains.`);
-        // Map RailRadar data to our app's internal schema
-        return response.data.trains.map(t => ({
-          _id: `ext-train-${t.train_number}`,
-          type: 'train',
-          trainName: t.train_name,
-          trainNumber: t.train_number,
-          source: source,
-          destination: destination,
-          sourceName: t.from_station_name || source,
-          destinationName: t.to_station_name || destination,
-          departureTime: t.departure_time || '00:00',
-          arrivalTime: t.arrival_time || '00:00',
-          duration: t.duration || '0h 0m',
-          pricing: [
-            { class: 'SL', price: 450, totalSeats: 72, availableSeats: 15 },
-            { class: '3A', price: 1200, totalSeats: 64, availableSeats: 8 }
-          ],
-          isActive: true,
-          isRealTime: true
-        }));
-      }
-    } else {
-      console.log(`[Stage 2] SKIP: RAILRADAR_API_KEY missing.`);
-    }
-
-    // Stage 3: RailRadar failed or no results - Final Fallback (already prepared by aiService)
-    console.log(`[Stage 3] Final Fallback: Returning high-quality demo data.`);
-    return aiResults || []; // This will be the demo data if Stage 1 returned it
-    
-  } catch (error) {
-    console.error('Train Search Strategy Error:', error.message);
-    // Ultimate fallback if everything crashes
+    console.log(`[AI Search] Generating trains: ${source} -> ${destination} on ${travelDate}`);
     return await generateTravelDataAI('train', source, destination, travelDate);
+  } catch (error) {
+    console.error('AI Train Search Error:', error.message);
+    return [];
   }
 };
 

@@ -6,6 +6,24 @@ import { useSearchStore } from '../store/searchStore';
 import { bookingAPI } from '../services/api';
 import { ArrowLeft, UserPlus, CheckCircle2, ShieldCheck, Wallet, Loader2, Trash2 } from 'lucide-react';
 
+const TAMIL_CITY_NAMES = {
+  'MAS': 'சென்னை', 'MAA': 'சென்னை',
+  'DLI': 'டெல்லி', 'DEL': 'டெல்லி', 'NDLS': 'டெல்லி',
+  'SBC': 'பெங்களூர்', 'BLR': 'பெங்களூர்',
+  'BOM': 'மும்பை', 'CSMT': 'மும்பை',
+  'MDU': 'மதுரை', 'IXM': 'மதுரை',
+  'CBE': 'கோவை', 'CJB': 'கோவை',
+  'TPJ': 'திருச்சி', 'TRZ': 'திருச்சி',
+  'HYB': 'ஹைதராபாத்', 'HYD': 'ஹைதராபாத்',
+  'HWH': 'கொல்கத்தா', 'CCU': 'கொல்கத்தா',
+  'SA': 'சேலம்', 'VLR': 'வேலூர்',
+  'TEN': 'திருநெல்வேலி', 'NCJ': 'நாகர்கோவில்',
+  'TJ': 'தஞ்சாவூர்', 'ED': 'ஈரோடு',
+  'TUT': 'தூத்துக்குடி', 'KMU': 'கும்பகோணம்',
+  'PGT': 'பாளையங்கோட்டை', 'VM': 'விழுப்புரம்',
+  'CDL': 'கடலூர்', 'UAM': 'ஓட்டி', 'PDY': 'புதுச்சேரி',
+};
+
 export function Book() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -84,6 +102,10 @@ export function Book() {
       const p = passengers[i];
       if (!p.name || !p.age) {
         alert(`பயணி ${i + 1}-ன் பெயர் மற்றும் வயதை நிரப்பவும்.`);
+        return false;
+      }
+      if (p.age && parseInt(p.age) > 122) {
+        alert(`பயணி ${i + 1}-ன் வயது 122-க்கு மேல் இருக்கக்கூடாது.`);
         return false;
       }
       
@@ -169,15 +191,26 @@ export function Book() {
         passengers: passengers.map(p => ({
           name: p.name.trim(),
           age: parseInt(p.age),
-          gender: p.gender === 'ஆண்' ? 'male' : p.gender === 'பெண்' ? 'female' : 'transgender',
+          gender: (p.gender || '').trim() === 'ஆண்' ? 'male' : (p.gender || '').trim() === 'பெண்' ? 'female' : 'transgender',
           idType: p.idType === 'ஆதார்' ? 'aadhaar' : p.idType === 'நிரந்தரக் கணக்கு எண்' ? 'pan' : p.idType === 'கடவுச்சீட்டு' ? 'passport' : 'voter_id',
           idNumber: p.idNumber.replace(/\s/g, '')
         })),
         foodPreference: foodPreference === 'சைவம்' ? 'veg' : foodPreference === 'அசைவம்' ? 'non-veg' : 'no_food',
         luggageAllowance: parseInt(luggageAllowance) || 15,
         paymentMethod: paymentMethod, // Selected from UI
+        // Include full travel info for AI-generated options
+        source: selectedOption.source,
+        sourceName: selectedOption.sourceName || selectedOption.source,
+        destination: selectedOption.destination,
+        destinationName: selectedOption.destinationName || selectedOption.destination,
+        travelType: selectedOption.type,
+        departureTime: selectedOption.departureTime,
+        arrivalTime: selectedOption.arrivalTime,
+        duration: selectedOption.duration,
+        travelClassPrice: travelClass.price,
       };
 
+      console.log("Submitting Booking Payload:", payload);
       const res = await bookingAPI.createBooking(payload);
       resetBooking();
       const ticketId = res.data?.booking?.ticketId || res.data?.ticketId;
@@ -253,7 +286,18 @@ export function Book() {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-brandMutedText text-sm mb-1 font-semibold">வயது</label>
-                      <input type="number" value={p.age} onChange={(e) => handlePassengerChange(idx, 'age', e.target.value)} min="1" max="122" className="input-field" placeholder="வயது"/>
+                      <input 
+                        type="number" 
+                        value={p.age} 
+                        onChange={(e) => handlePassengerChange(idx, 'age', e.target.value)} 
+                        min="1" 
+                        max="122" 
+                        className={`input-field ${p.age && parseInt(p.age) > 122 ? 'border-brandRed bg-red-50' : ''}`} 
+                        placeholder="வயது"
+                      />
+                      {p.age && parseInt(p.age) > 122 && (
+                        <p className="text-[10px] text-brandRed font-bold mt-1">வயது 122-க்கு மேல் இருக்கக்கூடாது</p>
+                      )}
                     </div>
                     <div>
                       <label className="block text-brandMutedText text-sm mb-1 font-semibold">பாலினம்</label>
@@ -342,7 +386,7 @@ export function Book() {
           <div className="space-y-6 slide-in">
             <div className="glassmorphism rounded-card shadow-sm p-6 border border-white/40">
               <h3 className="text-xl font-bold text-primary mb-4 flex items-center"><ShieldCheck className="mr-2"/> பயண சுருக்கம்</h3>
-              <p className="text-lg font-bold mb-1">{source} ➔ {destination}</p>
+              <p className="text-lg font-bold mb-1">{TAMIL_CITY_NAMES[source] || source} ➔ {TAMIL_CITY_NAMES[destination] || destination}</p>
               <p className="text-brandMutedText font-semibold mb-4">{travelDate} | {selectedOption.name} ({selectedOption.type})</p>
               
               <div className="border-t pt-4 mt-4">

@@ -6,7 +6,7 @@ const passengerSchema = new mongoose.Schema({
   gender: {
     type: String,
     required: true,
-    enum: ['male', 'female', 'other'],
+    enum: ['male', 'female', 'transgender', 'other'],
   },
   idType: {
     type: String,

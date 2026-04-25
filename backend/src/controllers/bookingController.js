@@ -54,7 +54,7 @@ const createBooking = async (req, res, next) => {
 
     // 0.2 Backend Validation for Gender
     for (const [idx, p] of passengers.entries()) {
-      if (!['male', 'female', 'transgender'].includes(p.gender)) {
+      if (!['male', 'female', 'transgender', 'other'].includes((p.gender || '').trim())) {
         return res.status(400).json({
           success: false,
           message: `பயணி ${idx + 1}-க்கு சரியான பாலினத்தை தேர்ந்தெடுக்கவும்.`,
@@ -81,7 +81,7 @@ const createBooking = async (req, res, next) => {
         duration: req.body.duration || '12h 0m',
         luggageAllowance: 15,
         pricing: [
-          { class: travelClass, price: 4500, availableSeats: 99 }
+          { class: travelClass, price: req.body.travelClassPrice || 4500, availableSeats: 99 }
         ]
       };
     } else {

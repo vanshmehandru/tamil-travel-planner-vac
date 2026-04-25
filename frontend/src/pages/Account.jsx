@@ -5,6 +5,24 @@ import { authAPI, bookingAPI, ticketAPI } from '../services/api';
 import { User, Package, Bookmark, Settings, LogOut, Edit2, Save, X, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+const TAMIL_CITY_NAMES = {
+  'MAS': 'சென்னை', 'MAA': 'சென்னை',
+  'DLI': 'டெல்லி', 'DEL': 'டெல்லி', 'NDLS': 'டெல்லி',
+  'SBC': 'பெங்களூர்', 'BLR': 'பெங்களூர்',
+  'BOM': 'மும்பை', 'CSMT': 'மும்பை',
+  'MDU': 'மதுரை', 'IXM': 'மதுரை',
+  'CBE': 'கோவை', 'CJB': 'கோவை',
+  'TPJ': 'திருச்சி', 'TRZ': 'திருச்சி',
+  'HYB': 'ஹைதராபாத்', 'HYD': 'ஹைதராபாத்',
+  'HWH': 'கொல்கத்தா', 'CCU': 'கொல்கத்தா',
+  'SA': 'சேலம்', 'VLR': 'வேலூர்',
+  'TEN': 'திருநெல்வேலி', 'NCJ': 'நாகர்கோவில்',
+  'TJ': 'தஞ்சாவூர்', 'ED': 'ஈரோடு',
+  'TUT': 'தூத்துக்குடி', 'KMU': 'கும்பகோணம்',
+  'PGT': 'பாளையங்கோட்டை', 'VM': 'விழுப்புரம்',
+  'CDL': 'கடலூர்', 'UAM': 'ஓட்டி', 'PDY': 'புதுச்சேரி',
+};
+
 export function Account() {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
@@ -79,6 +97,10 @@ export function Account() {
   };
 
   const handleSaveProfile = async () => {
+    if (editForm.age && parseInt(editForm.age) > 122) {
+      alert('வயது 122-க்கு மேல் இருக்கக்கூடாது.');
+      return;
+    }
     setIsSaving(true);
     try {
       const res = await authAPI.updateProfile(editForm);
@@ -186,7 +208,16 @@ export function Account() {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="text-sm text-brandMutedText font-semibold">வயது</label>
-                      <input type="number" value={editForm.age} onChange={(e) => setEditForm({...editForm, age: e.target.value})} className="input-field mt-1" />
+                      <input 
+                        type="number" 
+                        value={editForm.age} 
+                        onChange={(e) => setEditForm({...editForm, age: e.target.value})} 
+                        className={`input-field mt-1 ${editForm.age && parseInt(editForm.age) > 122 ? 'border-brandRed bg-red-50' : ''}`} 
+                        max="122"
+                      />
+                      {editForm.age && parseInt(editForm.age) > 122 && (
+                        <p className="text-[10px] text-brandRed font-bold mt-1">வயது 122-க்கு மேல் இருக்கக்கூடாது</p>
+                      )}
                     </div>
                     <div>
                       <label className="text-sm text-brandMutedText font-semibold">பாலினம்</label>
@@ -217,7 +248,9 @@ export function Account() {
                               {new Date(b.travelDate).toLocaleDateString('ta-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
                             </span>
                          </div>
-                         <h3 className="font-bold text-lg">{b.sourceName} ➔ {b.destinationName}</h3>
+                        <h3 className="font-bold text-lg">
+                           {TAMIL_CITY_NAMES[b.source] || b.sourceName} ➔ {TAMIL_CITY_NAMES[b.destination] || b.destinationName}
+                        </h3>
                          <p className="text-brandMutedText font-semibold mt-1">₹{b.totalAmount} | {b.travelType === 'train' ? 'ரயில்' : b.travelType === 'bus' ? 'பஸ்' : 'விமானம்'}</p>
                       </div>
                       <div className="mt-4 md:mt-0 flex space-x-3">

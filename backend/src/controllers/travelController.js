@@ -28,6 +28,24 @@ const CITY_ALIASES = {
   'புதுச்சேரி': 'PDY', 'pondicherry': 'PDY', 'puducherry': 'PDY',
 };
 
+const TAMIL_CITY_NAMES = {
+  'MAS': 'சென்னை', 'MAA': 'சென்னை',
+  'DLI': 'டெல்லி', 'DEL': 'டெல்லி', 'NDLS': 'டெல்லி',
+  'SBC': 'பெங்களூர்', 'BLR': 'பெங்களூர்',
+  'BOM': 'மும்பை', 'CSMT': 'மும்பை',
+  'MDU': 'மதுரை', 'IXM': 'மதுரை',
+  'CBE': 'கோவை', 'CJB': 'கோவை',
+  'TPJ': 'திருச்சி', 'TRZ': 'திருச்சி',
+  'HYB': 'ஹைதராபாத்', 'HYD': 'ஹைதராபாத்',
+  'HWH': 'கொல்கத்தா', 'CCU': 'கொல்கத்தா',
+  'SA': 'சேலம்', 'VLR': 'வேலூர்',
+  'TEN': 'திருநெல்வேலி', 'NCJ': 'நாகர்கோவில்',
+  'TJ': 'தஞ்சாவூர்', 'ED': 'ஈரோடு',
+  'TUT': 'தூத்துக்குடி', 'KMU': 'கும்பகோணம்',
+  'PGT': 'பாளையங்கோட்டை', 'VM': 'விழுப்புரம்',
+  'CDL': 'கடலூர்', 'UAM': 'ஓட்டி', 'PDY': 'புதுச்சேரி',
+};
+
 // Transport-aware mapping (Maps a base code to the primary code for that transport mode)
 const TRANSPORT_CODE_MAP = {
   'MAS': { train: 'MAS', flight: 'MAA', bus: 'MAS' },
@@ -157,7 +175,11 @@ const searchTravel = async (req, res, next) => {
 
     const localOptions = await TravelOption.find(query).sort({ 'pricing.0.price': 1 }).lean();
     
-    const options = [...externalOptions, ...localOptions];
+    const options = [...externalOptions, ...localOptions].map(opt => ({
+      ...opt,
+      sourceName: TAMIL_CITY_NAMES[opt.source] || opt.sourceName,
+      destinationName: TAMIL_CITY_NAMES[opt.destination] || opt.destinationName,
+    }));
 
     if (options.length === 0) {
       return res.status(200).json({

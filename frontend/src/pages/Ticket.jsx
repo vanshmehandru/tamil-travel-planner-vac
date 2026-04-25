@@ -5,6 +5,24 @@ import { NavBar } from '../components/NavBar';
 import { ticketAPI } from '../services/api';
 import { Printer, Save, Bookmark, BookmarkCheck, QrCode, Train, Bus, Plane, Loader2 } from 'lucide-react';
 
+const TAMIL_CITY_NAMES = {
+  'MAS': 'சென்னை', 'MAA': 'சென்னை',
+  'DLI': 'டெல்லி', 'DEL': 'டெல்லி', 'NDLS': 'டெல்லி',
+  'SBC': 'பெங்களூர்', 'BLR': 'பெங்களூர்',
+  'BOM': 'மும்பை', 'CSMT': 'மும்பை',
+  'MDU': 'மதுரை', 'IXM': 'மதுரை',
+  'CBE': 'கோவை', 'CJB': 'கோவை',
+  'TPJ': 'திருச்சி', 'TRZ': 'திருச்சி',
+  'HYB': 'ஹைதராபாத்', 'HYD': 'ஹைதராபாத்',
+  'HWH': 'கொல்கத்தா', 'CCU': 'கொல்கத்தா',
+  'SA': 'சேலம்', 'VLR': 'வேலூர்',
+  'TEN': 'திருநெல்வேலி', 'NCJ': 'நாகர்கோவில்',
+  'TJ': 'தஞ்சாவூர்', 'ED': 'ஈரோடு',
+  'TUT': 'தூத்துக்குடி', 'KMU': 'கும்பகோணம்',
+  'PGT': 'பாளையங்கோட்டை', 'VM': 'விழுப்புரம்',
+  'CDL': 'கடலூர்', 'UAM': 'ஓட்டி', 'PDY': 'புதுச்சேரி',
+};
+
 export function Ticket() {
   const { ticketId } = useParams();
   const navigate = useNavigate();
@@ -88,7 +106,7 @@ export function Ticket() {
                  <div className="text-center w-1/3">
                     <p className="text-xs text-brandMutedText mb-1 uppercase font-semibold">புறப்பாடு</p>
                     <p className="text-3xl font-bold text-brandDarkText mb-1">{journey.departureTime}</p>
-                    <p className="font-bold text-primary text-lg">{journey.sourceName}</p>
+                    <p className="font-bold text-primary text-lg">{TAMIL_CITY_NAMES[journey.source] || journey.sourceName}</p>
                  </div>
                  <div className="text-center flex flex-col items-center flex-1 px-4">
                     <p className="text-sm font-bold text-brandMutedText bg-slate-50 px-3 py-1 rounded-full mb-2">{journey.duration}</p>
@@ -103,7 +121,7 @@ export function Ticket() {
                  <div className="text-center w-1/3">
                     <p className="text-xs text-brandMutedText mb-1 uppercase font-semibold">வருகை</p>
                     <p className="text-3xl font-bold text-brandDarkText mb-1">{journey.arrivalTime}</p>
-                    <p className="font-bold text-primary text-lg">{journey.destinationName}</p>
+                    <p className="font-bold text-primary text-lg">{TAMIL_CITY_NAMES[journey.destination] || journey.destinationName}</p>
                  </div>
               </div>
 

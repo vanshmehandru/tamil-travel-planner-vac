@@ -20,8 +20,8 @@ router.post(
     body('travelDate').isISO8601().withMessage('சரியான தேதி கொடுக்கவும்'),
     body('passengers').isArray({ min: 1 }).withMessage('குறைந்தது ஒரு பயணி தேவை'),
     body('passengers.*.name').notEmpty().withMessage('பயணியின் பெயர் தேவை'),
-    body('passengers.*.age').isInt({ min: 1, max: 120 }).withMessage('சரியான வயது கொடுக்கவும்'),
-    body('passengers.*.gender').isIn(['male', 'female', 'other']).withMessage('பாலினம் தேவை'),
+    body('passengers.*.age').isInt({ min: 1, max: 122 }).withMessage('சரியான வயது கொடுக்கவும்'),
+    body('passengers.*.gender').isIn(['male', 'female', 'transgender', 'other']).withMessage('பாலினம் தேவை'),
   ],
   validate,
   createBooking

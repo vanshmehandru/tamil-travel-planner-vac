@@ -15,6 +15,10 @@ export function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!isLoginTab && formData.age && parseInt(formData.age) > 122) {
+      setErrorMsg('வயது 122-க்கு மேல் இருக்கக்கூடாது.');
+      return;
+    }
     setIsLoading(true);
     setErrorMsg('');
     try {
@@ -75,7 +79,19 @@ export function Login() {
               <div className="flex space-x-4">
                 <div className="flex-1">
                   <label className="block text-brandDarkText mb-1 font-semibold">வயது</label>
-                  <input type="number" name="age" value={formData.age} onChange={handleChange} required min="1" max="122" className="input-field" />
+                  <input 
+                    type="number" 
+                    name="age" 
+                    value={formData.age} 
+                    onChange={handleChange} 
+                    required 
+                    min="1" 
+                    max="122" 
+                    className={`input-field ${formData.age && parseInt(formData.age) > 122 ? 'border-brandRed bg-red-50' : ''}`} 
+                  />
+                  {formData.age && parseInt(formData.age) > 122 && (
+                    <p className="text-[10px] text-brandRed font-bold mt-1">வயது 122-க்கு மேல் இருக்கக்கூடாது</p>
+                  )}
                 </div>
                 <div className="flex-1">
                   <label className="block text-brandDarkText mb-1 font-semibold">பாலினம்</label>

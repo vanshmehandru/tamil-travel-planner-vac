@@ -11,7 +11,6 @@
 - **🤖 AI-Powered Search:** Natural language travel search using Google Gemini AI, supporting Tamil queries.
 - **🚆 Multimodal Travel:** Search and book for Flights, Trains, and more.
 - **🎫 Digital Tickets:** Automated ticket generation with QR codes and PDF export.
-- **🗺️ Interactive Maps:** Visualize routes and locations using Leaflet.js.
 - **🔐 Secure Authentication:** JWT-based user authentication with protected routes.
 - **📱 Responsive UI:** Premium, mobile-friendly design built with React and Tailwind CSS.
 - **🌍 Localization:** Deep support for Tamil language throughout the application.
@@ -24,7 +23,6 @@
 - **Framework:** [React 19](https://react.dev/) + [Vite](https://vitejs.dev/)
 - **Styling:** [Tailwind CSS](https://tailwindcss.com/)
 - **State Management:** [Zustand](https://docs.pmnd.rs/zustand/getting-started/introduction)
-- **Maps:** [Leaflet](https://leafletjs.com/) & [React Leaflet](https://react-leaflet.js.org/)
 - **Icons:** [Lucide React](https://lucide.dev/)
 
 ### Backend
@@ -51,7 +49,7 @@ The project is divided into two main parts:
 ### Prerequisites
 - Node.js (>= 20.0.0)
 - MongoDB account (Atlas or local)
-- API Keys for Gemini, AviationStack, and RapidAPI (IRCTC)
+- API Keys for Gemini OR AviationStack, and RapidAPI (IRCTC)
 
 ### Installation
 
@@ -111,7 +109,8 @@ VITE_API_URL=http://localhost:5000/api
 
 ## 📸 Screenshots
 
-*(Add screenshots here after deploying or running locally)*
+<img width="1900" height="905" alt="image" src="https://github.com/user-attachments/assets/e06173f8-b15b-454f-beb9-5d2d5e8e777e" />
+
 
 ---
 
@@ -121,10 +120,4 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ---
 
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-**Developed with ❤️ for the Tamil community.**
+**Developed with ❤️.**

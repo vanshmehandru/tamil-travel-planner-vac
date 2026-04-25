@@ -24,7 +24,7 @@ const app = express();
 
 // ─── Security & Utility Middleware ───────────────────────────────────────────
 app.use(helmet());
-app.use(cors({ origin: '*', methods: ['GET', 'POST', 'PUT', 'DELETE'] }));
+app.use(cors({ origin: process.env.FRONTEND_URL || '*', methods: ['GET', 'POST', 'PUT', 'DELETE'] }));
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true }));
 
